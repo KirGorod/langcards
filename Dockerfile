@@ -22,3 +22,4 @@ RUN poetry config virtualenvs.create false \
 
 # Copy project files into the docker image
 COPY . .
+COPY entrypoint.sh /entrypoint.sh
