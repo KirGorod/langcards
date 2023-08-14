@@ -3,12 +3,12 @@ version: '3'
 services:
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver --settings=core.settings.${SETTINGS_TYPE} 0.0.0.0:8000
     volumes:
       - .:/code
     working_dir: /code/core
     ports:
-      - "8000:8000"
+      - "${APP_PORT}:8000"
     depends_on:
       - db
     environment:
