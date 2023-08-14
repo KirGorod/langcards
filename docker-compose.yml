@@ -3,7 +3,7 @@ version: '3'
 services:
   web:
     build: .
-    command: python manage.py runserver --settings=core.settings.${SETTINGS_TYPE} 0.0.0.0:8000
+    command: /entrypoint.sh --settings=core.settings.${SETTINGS_TYPE}
     volumes:
       - .:/code
     working_dir: /code/core
