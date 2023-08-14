@@ -1,3 +1,4 @@
 .env
 *__pycache__
 core/core/settings/prod.py
+core/core/staticfiles/

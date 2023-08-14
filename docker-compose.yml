@@ -3,7 +3,7 @@ version: '3'
 services:
   web:
     build: .
-    entrypoint: ["/entrypoint.sh"]
+    entrypoint: ["/entrypoint-${SETTINGS_TYPE}.sh"]
     command: python manage.py runserver --settings=core.settings.${SETTINGS_TYPE} 0.0.0.0:8000
     volumes:
       - .:/code
@@ -16,6 +16,7 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
+      - SETTINGS_TYPE=${SETTINGS_TYPE}
   db:
     image: postgres:13
     volumes:
