@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    
+
     'user',
 ]
 
@@ -138,9 +138,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'user.authentication.CustomTokenAuthentication',
     ),
 }
+
+AUTHENTICATION_TOKEN_TYPE = 'Bearer'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -151,3 +153,6 @@ AUTH_USER_MODEL = 'user.User'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')

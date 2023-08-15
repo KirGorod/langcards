@@ -3,8 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
 
-from .serializers import UserRegisterSerializer
+from .serializers import UserRegisterSerializer, UserSerializer
 
 
 class LoginView(APIView):
@@ -17,7 +21,10 @@ class LoginView(APIView):
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': 'Wrong username or password'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Wrong username or password'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class RegisterView(APIView):
@@ -25,5 +32,23 @@ class RegisterView(APIView):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({'user_id': user.id}, status=status.HTTP_201_CREATED)
+            return Response(
+                {'user_id': user.id},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileView(RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [JSONRenderer]
+    parser_classes = [JSONParser]
+
+    def get_object(self):
+        return self.request.user
+
+    def perform_update(self, serializer):
+        user = serializer.save()
+        Token.objects.filter(user=user).delete()
+        Token.objects.create(user=user)

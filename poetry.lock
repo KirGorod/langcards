@@ -53,12 +53,61 @@ django = ">=3.0"
 pytz = "*"
 
 [[package]]
+name = "flake8"
+version = "6.1.0"
+description = "the modular source code checker: pep8 pyflakes and co"
+category = "main"
+optional = false
+python-versions = ">=3.8.1"
+
+[package.dependencies]
+mccabe = ">=0.7.0,<0.8.0"
+pycodestyle = ">=2.11.0,<2.12.0"
+pyflakes = ">=3.1.0,<3.2.0"
+
+[[package]]
+name = "mccabe"
+version = "0.7.0"
+description = "McCabe checker, plugin for flake8"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
+name = "pillow"
+version = "10.0.0"
+description = "Python Imaging Library (Fork)"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.extras]
+docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-inline-tabs", "sphinx-removed-in", "sphinxext-opengraph"]
+tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
+
+[[package]]
 name = "psycopg2"
 version = "2.9.7"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
 category = "main"
 optional = false
 python-versions = ">=3.6"
+
+[[package]]
+name = "pycodestyle"
+version = "2.11.0"
+description = "Python style guide checker"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[[package]]
+name = "pyflakes"
+version = "3.1.0"
+description = "passive checker of Python programs"
+category = "main"
+optional = false
+python-versions = ">=3.8"
 
 [[package]]
 name = "pytz"
@@ -100,14 +149,19 @@ python-versions = ">=2"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "afc85bed587380989354a76d53cb5b3ae48b89f6c726e2966cdb798c8d887876"
+content-hash = "d54a3df3a6070cfddad9a037e67de8a062bf8fc588e2947063a1b4b90a0fca24"
 
 [metadata.files]
 asgiref = []
 django = []
 django-cors-headers = []
 djangorestframework = []
+flake8 = []
+mccabe = []
+pillow = []
 psycopg2 = []
+pycodestyle = []
+pyflakes = []
 pytz = []
 sqlparse = []
 typing-extensions = []

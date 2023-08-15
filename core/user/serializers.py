@@ -18,3 +18,25 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email']
         )
         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'password',
+            'first_name', 'last_name'
+        )
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+        
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        instance = super(UserSerializer, self).update(instance, validated_data)
+
+        if password:
+            instance.set_password(password)
+            instance.save()
+
+        return instance
