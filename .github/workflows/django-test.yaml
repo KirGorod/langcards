@@ -108,7 +108,7 @@ jobs:
         chmod 600 private_key
         # SSH into the server
         ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$HOST <<-EOL
-          cd /root/dev/langcards
+          cd /home/deployer/langcards
           git pull origin main
           docker-compose down
           docker-compose up -d --build
