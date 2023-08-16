@@ -20,6 +20,7 @@ services:
       - DB_HOST=${DB_HOST}
       - SETTINGS_TYPE=${SETTINGS_TYPE}
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
   db:
     image: postgres:13
     volumes:
