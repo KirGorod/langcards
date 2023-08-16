@@ -97,8 +97,8 @@ jobs:
     - name: Deploy to dev server
       if: success()  # Only run if previous steps were successful
       env:
-        HOST: your.dev.server.ip
-        USERNAME: your_server_username
+        HOST: 159.65.119.170
+        USERNAME: deployer
         PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       run: |
         # Install SSH client
@@ -108,7 +108,7 @@ jobs:
         chmod 600 private_key
         # SSH into the server
         ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$HOST <<-EOL
-          cd /path/to/your/project
+          cd /root/dev/langcards
           git pull origin main
           docker-compose down
           docker-compose up -d --build
