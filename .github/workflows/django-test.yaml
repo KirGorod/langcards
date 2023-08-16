@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  build:
+  test_and_deploy:
     runs-on: ubuntu-latest
 
     services:
@@ -93,3 +93,23 @@ jobs:
         DB_HOST: db
         DJANGO_SETTINGS_MODULE: core.settings.dev
         DJANGO_SECRET_KEY: secret_key
+
+    - name: Deploy to dev server
+      if: success()  # Only run if previous steps were successful
+      env:
+        HOST: your.dev.server.ip
+        USERNAME: your_server_username
+        PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      run: |
+        # Install SSH client
+        sudo apt-get install -y openssh-client
+        # Write the SSH private key from secrets
+        echo "$PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        # SSH into the server
+        ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$HOST <<-EOL
+          cd /path/to/your/project
+          git pull origin main
+          docker-compose down
+          docker-compose up -d --build
+        EOL
