@@ -44,13 +44,39 @@ jobs:
 
     - name: Build the Docker Compose file
       run: docker-compose -f docker-compose.yml build
+      env:
+        SETTINGS_TYPE: test  # or whatever default you want
+        APP_PORT: 8000  # default port
+        DB_NAME: github_actions
+        DB_USER: user
+        DB_PASS: password
+        DB_PORT: 5432
+        DB_HOST: db
+        DJANGO_SETTINGS_MODULE: core.settings.test
 
     - name: Up services
       run: docker-compose -f docker-compose.yml up -d
+      env:
+        SETTINGS_TYPE: test
+        APP_PORT: 8000
+        DB_NAME: github_actions
+        DB_USER: user
+        DB_PASS: password
+        DB_PORT: 5432
+        DB_HOST: db
+        DJANGO_SETTINGS_MODULE: core.settings.test
 
     - name: Run tests
-      run: |
-        docker-compose exec web python manage.py test --settings=core.settings.test
+      run: docker-compose exec web python manage.py test --settings=core.settings.test
+      env:
+        SETTINGS_TYPE: test
+        APP_PORT: 8000
+        DB_NAME: github_actions
+        DB_USER: user
+        DB_PASS: password
+        DB_PORT: 5432
+        DB_HOST: db
+        DJANGO_SETTINGS_MODULE: core.settings.test
 
     - name: Shutdown services
       run: docker-compose down
