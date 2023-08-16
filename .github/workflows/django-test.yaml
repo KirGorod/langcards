@@ -52,7 +52,8 @@ jobs:
         DB_PASS: password
         DB_PORT: 5432
         DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.test
+        DJANGO_SETTINGS_MODULE: core.settings.dev
+        DJANGO_SECRET_KEY: secret_key
 
     - name: Up services
       run: docker-compose -f docker-compose.yml up -d
@@ -64,10 +65,11 @@ jobs:
         DB_PASS: password
         DB_PORT: 5432
         DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.test
+        DJANGO_SETTINGS_MODULE: core.settings.dev
+        DJANGO_SECRET_KEY: secret_key
 
     - name: Run tests
-      run: docker-compose exec -T web python manage.py test --settings=core.settings.test
+      run: docker-compose exec -T web python manage.py test --settings=core.settings.dev
       env:
         SETTINGS_TYPE: dev
         APP_PORT: 8000
@@ -76,7 +78,8 @@ jobs:
         DB_PASS: password
         DB_PORT: 5432
         DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.test
+        DJANGO_SETTINGS_MODULE: core.settings.dev
+        DJANGO_SECRET_KEY: secret_key
 
     - name: Shutdown services
       run: docker-compose down
