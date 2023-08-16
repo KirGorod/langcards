@@ -3,4 +3,9 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    email = models.EmailField(unique=True, verbose_name='email address', null=True)
+    email = models.EmailField(
+        unique=True,
+        verbose_name='email address',
+        null=True
+    )
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)

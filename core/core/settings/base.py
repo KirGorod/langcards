@@ -156,3 +156,5 @@ CORS_ALLOWED_ORIGINS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+DJANGO_SETTINGS_MODULE = os.getenv('DJANGO_SETTINGS_MODULE', 'core.settings.prod')

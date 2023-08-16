@@ -4,3 +4,4 @@ core/core/settings/prod.py
 core/core/staticfiles/
 .vscode/
 .devcontainer/
+core/core/media
