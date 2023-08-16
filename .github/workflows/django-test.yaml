@@ -83,3 +83,13 @@ jobs:
 
     - name: Shutdown services
       run: docker-compose down
+      env:
+        SETTINGS_TYPE: dev
+        APP_PORT: 8000
+        DB_NAME: github_actions
+        DB_USER: user
+        DB_PASS: password
+        DB_PORT: 5432
+        DB_HOST: db
+        DJANGO_SETTINGS_MODULE: core.settings.dev
+        DJANGO_SECRET_KEY: secret_key
