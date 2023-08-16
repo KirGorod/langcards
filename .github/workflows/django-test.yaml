@@ -67,7 +67,7 @@ jobs:
         DJANGO_SETTINGS_MODULE: core.settings.test
 
     - name: Run tests
-      run: docker-compose exec web python manage.py test --settings=core.settings.test
+      run: docker-compose exec -T web python manage.py test --settings=core.settings.test
       env:
         SETTINGS_TYPE: dev
         APP_PORT: 8000
