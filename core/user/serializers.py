@@ -3,6 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -24,22 +25,31 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    password_old = serializers.CharField(write_only=True)
+    password_new = serializers.CharField(write_only=True)
     avatar_base64 = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'password',  'first_name', 'last_name',
-            'avatar', 'avatar_base64',
+            'username', 'email', 'password_old', 'password_new', 'first_name',
+            'last_name', 'avatar', 'avatar_base64',
         )
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+
+    def validate_password_old(self, password_old):
+        user = self.instance
+        if not user.check_password(password_old):
+            raise serializers.ValidationError('Wrong old password')
+        return password_old
 
     def update(self, instance, validated_data):
-        password = validated_data.get('password')
+        password_old = validated_data.get('password_old')
+        password_new = validated_data.get('password_new')
         avatar_base64 = validated_data.get('avatar_base64')
-        instance = super(UserSerializer, self).update(instance, validated_data)
+        user = super(UserSerializer, self).update(instance, validated_data)
+
+        if password_old and password_new:
+            user.set_password(password_new)
 
         if avatar_base64:
             format, imgstr = avatar_base64.split(';base64,')
@@ -48,10 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
                 base64.b64decode(imgstr),
                 name='avatar.' + ext
             )
-            instance.avatar = avatar_file
+            user.avatar = avatar_file
 
-        if password:
-            instance.set_password(password)
-
-        instance.save()
-        return instance
+        user.save()
+        return user
