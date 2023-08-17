@@ -114,4 +114,11 @@ jobs:
           git pull
           docker-compose down
           docker-compose up -d --build
+
+          # Check if 'web' service is up and running
+          SERVICE_STATUS=\$(docker-compose ps | grep web | grep "Up")
+          if [ -z "\$SERVICE_STATUS" ]; then
+            echo "'web' service is not running!"
+            exit 1
+          fi
         EOL
