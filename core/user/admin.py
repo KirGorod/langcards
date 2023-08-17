@@ -1,9 +1,5 @@
 from django.contrib import admin
 from user.models import User
+from django.contrib.auth.admin import UserAdmin
 
-
-class UserAdmin(admin.ModelAdmin):
-    model = User
-
-
-admin.site.register(User)
+admin.site.register(User, UserAdmin)
