@@ -3,11 +3,11 @@
 # Uncommnent this for prod
 # Collect static files
 echo "Collect static files"
-python manage.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE}
+python manage.py collectstatic --noinput
 
 # # Apply database migrations
 echo "Apply database migrations"
-python manage.py migrate --settings=${DJANGO_SETTINGS_MODULE}
+python manage.py migrate
 
 # Start the server
 exec "$@"
