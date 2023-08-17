@@ -46,7 +46,7 @@ jobs:
     - name: Build the Docker Compose file
       run: docker-compose -f docker-compose.yml build
       env:
-        SETTINGS_TYPE: dev
+        ENTRYPOINT_TYPE: dev
         APP_PORT: 8000
         DB_NAME: github_actions
         DB_USER: user
@@ -59,7 +59,7 @@ jobs:
     - name: Up services
       run: docker-compose -f docker-compose.yml up -d
       env:
-        SETTINGS_TYPE: dev
+        ENTRYPOINT_TYPE: dev
         APP_PORT: 8000
         DB_NAME: github_actions
         DB_USER: user
@@ -72,7 +72,7 @@ jobs:
     - name: Run tests
       run: docker-compose exec -T web python manage.py test --settings=core.settings.dev
       env:
-        SETTINGS_TYPE: dev
+        ENTRYPOINT_TYPE: dev
         APP_PORT: 8000
         DB_NAME: github_actions
         DB_USER: user
@@ -85,7 +85,7 @@ jobs:
     - name: Shutdown services
       run: docker-compose down
       env:
-        SETTINGS_TYPE: dev
+        ENTRYPOINT_TYPE: dev
         APP_PORT: 8000
         DB_NAME: github_actions
         DB_USER: user
