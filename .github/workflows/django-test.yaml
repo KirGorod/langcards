@@ -70,7 +70,7 @@ jobs:
         DJANGO_SECRET_KEY: secret_key
 
     - name: Run tests
-      run: docker-compose exec -T web python manage.py test --settings=core.settings.dev
+      run: docker-compose exec -T web pytest
       env:
         ENTRYPOINT_TYPE: dev
         APP_PORT: 8000
