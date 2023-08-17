@@ -47,8 +47,3 @@ class UserProfileView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-
-    def perform_update(self, serializer):
-        user = serializer.save()
-        Token.objects.filter(user=user).delete()
-        Token.objects.create(user=user)

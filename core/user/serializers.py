@@ -3,6 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -24,6 +25,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    user_token = None
     avatar_base64 = serializers.CharField(write_only=True)
 
     class Meta:
@@ -52,6 +54,17 @@ class UserSerializer(serializers.ModelSerializer):
 
         if password:
             instance.set_password(password)
+            Token.objects.filter(user=instance).delete()
+            token = Token.objects.create(user=instance)
+            self.user_token = token.key
 
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        context = super().to_representation(instance)
+
+        if self.user_token:
+            context['token'] = self.user_token
+
+        return context
