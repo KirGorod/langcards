@@ -12,11 +12,15 @@ class UserLoginTests(APITestCase):
         cls.user = User.objects.create(
             username='testuser',
             email='test@mail.com',
-            password='password'
         )
+        cls.user.set_password('password')
+        cls.user.save()
         cls.token = Token.objects.create(user=cls.user)
 
     def test_login_wrong_username(self):
+        """
+        Test login when user by a given username is not in Database
+        """
         url = reverse('user:user_login')
         data = {
             'username': 'wronguser',
@@ -28,9 +32,42 @@ class UserLoginTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertIsNone(response.data.get('token'))
 
+    def test_login_wrong_password(self):
+        """
+        Test login with wrong password
+        """
+        url = reverse('user:user_login')
+        data = {
+            'username': 'testuser',
+            'password': 'wrongpassword'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(len(response.data), 1)
+        self.assertIsNone(response.data.get('token'))
+
+    def test_login_success(self):
+        """
+        Test successfull login request
+        """
+        url = reverse('user:user_login')
+        data = {
+            'username': 'testuser',
+            'password': 'password'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data.get('token'), self.token.key)
+
 
 class UserRegisterTests(APITestCase):
     def test_register_no_password(self):
+        """
+        Test user registration without password
+        """
         url = reverse('user:user_register')
         data = {
             'username': 'username',
@@ -44,6 +81,9 @@ class UserRegisterTests(APITestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_register_no_username(self):
+        """
+        Test user registration without username
+        """
         url = reverse('user:user_register')
         data = {
             'password': 'testpassword',
@@ -57,6 +97,9 @@ class UserRegisterTests(APITestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_register_bad_email(self):
+        """
+        Test user registration with invalid email address
+        """
         url = reverse('user:user_register')
         data = {
             'username': 'username',
@@ -72,7 +115,10 @@ class UserRegisterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(error_msg, 'Enter a valid email address.')
 
-    def test_register_fields_max_length(self):
+    def test_register_username_max_length(self):
+        """
+        Test username returns error when max_length exceeds 150
+        """
         long_string = 's' * 151
         url = reverse('user:user_register')
         data = {
@@ -94,6 +140,9 @@ class UserRegisterTests(APITestCase):
         )
 
     def test_register_user_success(self):
+        """
+        Test successfull registration
+        """
         url = reverse('user:user_register')
         data = {
             'username': 'username',
