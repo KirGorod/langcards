@@ -15,4 +15,4 @@ class Card(models.Model):
     image = models.ImageField(upload_to='cards/', blank=True, null=True)
 
     def __str__(self):
-        return f'{self.word} | {self.tranlsation}'
+        return f'{self.word} | {self.translation}'
