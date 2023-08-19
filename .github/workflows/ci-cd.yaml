@@ -1,7 +1,6 @@
-name: Django Tests
+name: Test Project
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - master
@@ -10,7 +9,7 @@ on:
       - master
 
 jobs:
-  test_and_deploy:
+  test_project:
     runs-on: ubuntu-latest
 
     services:
@@ -94,3 +93,37 @@ jobs:
         DB_HOST: db
         DJANGO_SETTINGS_MODULE: core.settings.dev
         DJANGO_SECRET_KEY: secret_key
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: test_project
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to dev server
+      if: success()  # Only run if previous steps were successful
+      env:
+        HOST: 159.65.119.170
+        USERNAME: deployer
+        PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      run: |
+        # Install SSH client
+        sudo apt-get install -y openssh-client
+        # Write the SSH private key from secrets
+        echo "$PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        # SSH into the server
+        ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$HOST <<-EOL
+          cd /home/deployer/langcards
+          git fetch --all
+          git pull
+          docker-compose down
+          docker-compose up -d --build
+
+          # Check if 'web' service is up and running
+          SERVICE_STATUS=\$(docker-compose ps | grep web | grep "Up")
+          if [ -z "\$SERVICE_STATUS" ]; then
+            echo "'web' service is not running!"
+            exit 1
+          fi
+        EOL
