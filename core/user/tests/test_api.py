@@ -1,4 +1,7 @@
+import json
+
 from django.urls import reverse
+from django.contrib.auth import authenticate
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -165,3 +168,184 @@ class UserRegisterTests(APITestCase):
         self.assertEqual(response['content-type'], 'application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, expected_response)
+
+
+class UserProfileTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create(
+            username='testuser',
+            email='email@mail.com',
+            first_name='first name',
+            last_name='last_name'
+        )
+        cls.user.set_password('test_password')
+        cls.token = Token.objects.create(
+            user=cls.user
+        )
+
+    def test_get_user_profile_not_authenticated(self):
+        """
+        Test GET user profile method without authentication
+        """
+        url = reverse('user:user_profile')
+        response = self.client.get(url)
+
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertEqual(
+            str(response.data.get('detail')),
+            'Authentication credentials were not provided.'
+        )
+
+    def test_patch_user_profile_not_authenticated(self):
+        """
+        Test PATCH user profile method without authentication
+        """
+        url = reverse('user:user_profile')
+        data = {
+            'username': 'new_username',
+            'email': 'new_email@mail.com',
+            'first_name': 'new name',
+            'last_name': 'new last name'
+        }
+        response = self.client.patch(url, data)
+
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertEqual(
+            str(response.data.get('detail')),
+            'Authentication credentials were not provided.'
+        )
+
+    def test_get_user_profile_success(self):
+        """
+        Test GET user profile data is successfull
+        """
+        self.client.force_authenticate(self.user)
+        url = reverse('user:user_profile')
+        response = self.client.get(url)
+        expected_data = {
+            'username': self.user.username,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'email': self.user.email,
+            'avatar': None
+        }
+
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertDictEqual(response.data, expected_data)
+        self.assertIsNone(response.data.get('password'))
+
+    def test_patch_user_profile_success(self):
+        """
+        Test PATCH user profile is successfull
+        """
+        self.client.force_authenticate(self.user)
+        url = reverse('user:user_profile')
+        data = {
+            'username': 'new_username',
+            'email': 'new_email@mail.com',
+            'first_name': 'new name',
+            'last_name': 'new last name'
+        }
+        response = self.client.patch(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )
+        updated_user = User.objects.get(id=self.user.id)
+        expected_data = {
+            'username': updated_user.username,
+            'first_name': updated_user.first_name,
+            'last_name': updated_user.last_name,
+            'email': updated_user.email,
+            'avatar': None
+        }
+
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+        self.assertTrue(all([
+            updated_user.username == 'new_username',
+            updated_user.first_name == 'new name',
+            updated_user.last_name == 'new last name',
+            updated_user.email == 'new_email@mail.com'
+        ]))
+        self.assertIsNone(response.data.get('password'))
+
+    def test_patch_change_single_data(self):
+        """
+        Test PATHC user profile to change single field (username)
+        """
+        self.client.force_authenticate(self.user)
+        url = reverse('user:user_profile')
+        data = {
+            'username': 'new_username',
+        }
+        response = self.client.patch(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )
+        updated_user = User.objects.get(id=self.user.id)
+        expected_data = {
+            'username': updated_user.username,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'email': self.user.email,
+            'avatar': None
+        }
+
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+        self.assertTrue(all([
+            updated_user.username == 'new_username',
+            updated_user.first_name == self.user.first_name,
+            updated_user.last_name == self.user.last_name,
+            updated_user.email == self.user.email
+        ]))
+        self.assertIsNone(response.data.get('password'))
+
+    def test_change_user_password(self):
+        """
+        Test change user password
+        """
+        self.client.force_authenticate(self.user)
+        url = reverse('user:user_profile')
+        data = {
+            'password': 'new_password',
+        }
+        response = self.client.patch(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )
+        new_token = Token.objects.get(user=self.user).key
+        expected_data = {
+            'username': self.user.username,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'email': self.user.email,
+            'avatar': None,
+            'token': new_token
+        }
+        user = authenticate(
+            username=self.user.username,
+            password='new_password'
+        )
+
+        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+        self.assertNotEqual(self.token.key, new_token)
+        self.assertTrue(user)
+        self.assertIsNone(response.data.get('password'))
