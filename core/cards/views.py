@@ -22,34 +22,30 @@ class LearnCardsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        progress = CardProgress.objects.pop_card(request.user)
-
-        if not progress:
-            return Response(
-                data={'status': 'finished'},
-                status=status.HTTP_200_OK
-            )
-
-        serializer = CardSerializer(progress.card)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return self._process_get_next_card()
 
     def post(self, request, *args, **kwargs):
-        progress = get_object_or_404(
-            CardProgress,
-            card__id=request.data.get('card_id'),
-            user=request.user
-        )
         action = self._validate_aciton(request.data.get('action'))
 
-        if not action:
+        if not self._is_valid_action(action):
             return Response(
                 data={'error': f'Action {action} is not valid'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        progress = get_object_or_404(
+            CardProgress,
+            card__id=request.data.get('card_id'),
+            user=request.user
+        )
         progress.handle_action(action)
-        progress = CardProgress.objects.pop_card(request.user)
+        return self._process_get_next_card()
 
+    def _is_valid_action(self, action):
+        return action in CardProgress.ACTIONS
+
+    def _process_get_next_card(self):
+        progress = CardProgress.objects.pop_card(self.request.user)
         if not progress:
             return Response(
                 data={'status': 'finished'},
@@ -57,7 +53,6 @@ class LearnCardsView(APIView):
             )
 
         serializer = CardSerializer(progress.card)
-
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def _validate_aciton(self, action):

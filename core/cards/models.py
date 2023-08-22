@@ -40,6 +40,8 @@ class CardProgress(models.Model):
         (RELEARNING, 'Relearning')
     )
 
+    ACTIONS = ['again', 'hard', 'good']
+
     user = models.ForeignKey(
         'user.User',
         on_delete=models.CASCADE,
@@ -60,45 +62,37 @@ class CardProgress(models.Model):
         return f'{self.user.username}`s progress for card {self.card.word}'
 
     def again(self):
-        if self.stage == self.NEW:
-            self.stage = self.LEARNING
-
+        interval = self.interval * 0.25
         if self.stage in [self.NEW, self.LEARNING]:
-            self.due = timezone.now() + timedelta(minutes=1)
-        else:
-            self.interval = self.interval * 0.25
-            self.ease = self.ease / 2
-            self.due = timezone.now() + timedelta(minutes=self.interval)
-
-        self.save()
+            interval = 1
+        self._update_progress(interval)
 
     def hard(self):
-        if self.stage == self.NEW:
-            self.stage = self.LEARNING
-
+        interval = self.interval * 0.25
         if self.stage in [self.NEW, self.LEARNING]:
-            self.due = timezone.now() + timedelta(minutes=5)
-        else:
-            self.interval = self.interval * 0.25
-            self.ease = self.ease / 2
-            self.due = timezone.now() + timedelta(minutes=self.interval)
-
-        self.save()
+            interval = 5
+        self._update_progress(interval)
 
     def good(self):
+        interval = self.interval * self.ease
+        if self.stage in [self.NEW, self.LEARNING]:
+            interval = 10
+        self._update_progress(interval)
+
+    def _update_progress(self, new_interval, new_ease=None):
         if self.stage == self.NEW:
             self.stage = self.LEARNING
 
-        if self.stage in [self.NEW, self.LEARNING]:
-            self.due = timezone.now() + timedelta(minutes=10)
-        else:
-            self.interval = self.interval * self.ease
-            new_ease = self.ease + 0.5
-            self.ease = min(new_ease, 5.0)
-            self.due = timezone.now() + timedelta(minutes=self.interval)
+        if new_ease:
+            self.ease = new_ease
 
+        self.due = timezone.now() + timedelta(minutes=new_interval)
         self.save()
 
     def handle_action(self, action):
-        action_method = getattr(self, action)
-        action_method()
+        if action in ['again', 'hard', 'good']:
+            action_method = getattr(self, action, None)
+            if callable(action_method):
+                action_method()
+                return
+        raise ValueError(f"Invalid action: {action}")
