@@ -1,9 +1,9 @@
-import base64
 
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+
+from core.fields import Base64ImageField
 
 User = get_user_model()
 
@@ -26,13 +26,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     user_token = None
-    avatar_base64 = serializers.CharField(write_only=True)
+    avatar = Base64ImageField()
 
     class Meta:
         model = User
         fields = (
             'username', 'email', 'password',  'first_name', 'last_name',
-            'avatar', 'avatar_base64',
+            'avatar',
         )
         extra_kwargs = {
             'password': {'write_only': True}
@@ -40,17 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.get('password')
-        avatar_base64 = validated_data.get('avatar_base64')
         instance = super(UserSerializer, self).update(instance, validated_data)
-
-        if avatar_base64:
-            format, imgstr = avatar_base64.split(';base64,')
-            ext = format.split('/')[-1]
-            avatar_file = ContentFile(
-                base64.b64decode(imgstr),
-                name='avatar.' + ext
-            )
-            instance.avatar = avatar_file
 
         if password:
             instance.set_password(password)
