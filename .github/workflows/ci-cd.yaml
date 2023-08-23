@@ -103,7 +103,7 @@ jobs:
     - name: Deploy to dev server
       if: success()  # Only run if previous steps were successful
       env:
-        HOST: 159.65.119.170
+        HOST: 46.101.248.100
         USERNAME: deployer
         PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       run: |
