@@ -26,9 +26,7 @@ class CardSerializer(serializers.ModelSerializer):
         Get answers for a quiz with ans_count wrong answers
         """
         answers = [self.instance.translation]
-        count = Card.objects.exclude(
-            id=self.instance.id
-        ).filter(
+        count = Card.objects.filter(
             deck=self.instance.deck
         ).count()
 
@@ -39,10 +37,8 @@ class CardSerializer(serializers.ModelSerializer):
             )
 
         while len(answers) < ans_count:
-            random_index = random.randint(0, count)
-            answer = Card.objects.exclude(
-                id=self.instance.id
-            ).filter(
+            random_index = random.randint(0, count - 1)
+            answer = Card.objects.filter(
                 deck=self.instance.deck
             )[random_index].translation
 
