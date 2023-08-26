@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
+import random
 
 from cards.models import Card, CardProgress
 from .serializers import CardSerializer
@@ -59,3 +60,20 @@ class LearnCardsView(APIView):
         if action not in ['again', 'hard', 'good']:
             return None
         return action
+
+
+class RandomCardView(APIView):
+    def get(self, request, *args, **kwargs):
+        cards = Card.objects.all()
+        if not cards:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        random_card = random.choice(cards)
+        serializer = CardSerializer(
+            instance=random_card,
+            context={'request': request}
+        )
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
