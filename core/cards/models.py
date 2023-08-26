@@ -35,12 +35,13 @@ class Card(models.Model):
 
 
 class CardProgressManager(models.Manager):
-    def pop_card(self, user):
+    def pop_card(self, user, deck):
         """
         Get first card to learn
         """
         return self.filter(
             user=user,
+            card__deck=deck,
             due__lte=timezone.now()
         ).order_by('due').first()
 
