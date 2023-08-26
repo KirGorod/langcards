@@ -39,7 +39,7 @@ class CardSerializer(serializers.ModelSerializer):
             )
 
         while len(answers) < ans_count:
-            random_index = random.randint(0, count - 1)
+            random_index = random.randint(0, count)
             answer = Card.objects.exclude(
                 id=self.instance.id
             ).filter(
