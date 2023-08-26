@@ -22,7 +22,10 @@ class RandomCardView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         random_card = random.choice(cards)
-        serializer = CardSerializer(instance=random_card)
+        serializer = CardSerializer(
+            instance=random_card,
+            context={'request': request}
+        )
         return Response(
             data=serializer.data,
             status=status.HTTP_200_OK
