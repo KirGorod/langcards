@@ -23,9 +23,11 @@ class LearnCardsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        return self._process_get_next_card()
+        deck = get_object_or_404(Deck, id=kwargs.get('deck_id'))
+        return self._process_get_next_card(deck)
 
     def post(self, request, *args, **kwargs):
+        deck = get_object_or_404(Deck, id=kwargs.get('deck_id'))
         action = self._validate_aciton(request.data.get('action'))
 
         if not self._is_valid_action(action):
@@ -37,16 +39,17 @@ class LearnCardsView(APIView):
         progress = get_object_or_404(
             CardProgress,
             card__id=request.data.get('card_id'),
+            card__deck=deck,
             user=request.user
         )
         progress.handle_action(action)
-        return self._process_get_next_card()
+        return self._process_get_next_card(deck)
 
     def _is_valid_action(self, action):
         return action in CardProgress.ACTIONS
 
-    def _process_get_next_card(self):
-        progress = CardProgress.objects.pop_card(self.request.user)
+    def _process_get_next_card(self, deck):
+        progress = CardProgress.objects.pop_card(self.request.user, deck)
         if not progress:
             return Response(
                 data={'status': 'finished'},

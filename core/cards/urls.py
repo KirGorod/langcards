@@ -10,7 +10,11 @@ router.register(r'cards', views.CardViewSet, basename='cards')
 urlpatterns = router.urls
 
 urlpatterns += [
-    path('learn/', views.LearnCardsView.as_view(), name='learn_cards'),
+    path(
+        'learn/<int:deck_id>/',
+        views.LearnCardsView.as_view(),
+        name='learn_cards'
+    ),
     path('random_card/', views.RandomCardView.as_view(), name='random_card'),
     path(
         'add_deck/<int:deck_id>/',
