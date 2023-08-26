@@ -7,7 +7,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
 import random
 
-from cards.models import Card, CardProgress
+from cards.models import Card, CardProgress, Deck
 from .serializers import CardSerializer
 
 
@@ -80,3 +80,13 @@ class RandomCardView(APIView):
             data=serializer.data,
             status=status.HTTP_200_OK
         )
+
+
+class AddDeckToLearning(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        deck = get_object_or_404(Deck, id=kwargs.get('deck_id'))
+        deck.add_to_user(self.request.user)
+
+        return Response(status=status.HTTP_201_CREATED)

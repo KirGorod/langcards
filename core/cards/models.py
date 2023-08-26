@@ -9,9 +9,23 @@ class Deck(models.Model):
     def __str__(self):
         return self.title
 
+    def add_to_user(self, user):
+        """
+        Add all cards from the Deck to user's learning progress
+        """
+        for card in self.cards.all():
+            CardProgress.objects.get_or_create(
+                user=user,
+                card=card
+            )
+
 
 class Card(models.Model):
-    deck = models.ForeignKey(Deck, on_delete=models.CASCADE)
+    deck = models.ForeignKey(
+        Deck,
+        on_delete=models.CASCADE,
+        related_name='cards'
+    )
     word = models.CharField(max_length=255)
     translation = models.CharField(max_length=255)
     image = models.ImageField(upload_to='cards/', blank=True, null=True)
@@ -22,6 +36,9 @@ class Card(models.Model):
 
 class CardProgressManager(models.Manager):
     def pop_card(self, user):
+        """
+        Get first card to learn
+        """
         return self.filter(
             user=user,
             due__lte=timezone.now()
