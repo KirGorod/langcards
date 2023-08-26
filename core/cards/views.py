@@ -53,7 +53,10 @@ class LearnCardsView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        serializer = CardSerializer(progress.card)
+        serializer = CardSerializer(
+            progress.card,
+            context={'request': self.request}
+        )
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def _validate_aciton(self, action):
