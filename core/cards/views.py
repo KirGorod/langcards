@@ -31,7 +31,8 @@ class CardViewSet(viewsets.ModelViewSet):
     def get_object(self):
         card = super().get_object()
         user = self.request.user
-        if user != card.user:
+
+        if user != card.deck.user:
             raise PermissionDenied("You are not allowed to edit this card.")
         return card
 
