@@ -8,13 +8,34 @@ from rest_framework.permissions import IsAuthenticated
 import random
 
 from cards.models import Card, CardProgress, Deck
-from .serializers import CardSerializer
+from .serializers import CardSerializer, DeckSerializer
 
 
 class CardViewSet(viewsets.ModelViewSet):
+    renderer_classes = [JSONRenderer]
+    parser_classes = [JSONParser]
+
     model = Card
     queryset = Card.objects.all()
     serializer_class = CardSerializer
+
+
+class DeckViewSet(viewsets.ModelViewSet):
+    renderer_classes = [JSONRenderer]
+    parser_classes = [JSONParser]
+    permission_classes = [IsAuthenticated]
+
+    model = Deck
+    serializer_class = DeckSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        default_decks = Deck.objects.filter(default=True)
+        user_decks = Deck.objects.filter(user=user)
+        return default_decks.union(user_decks)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class LearnCardsView(APIView):

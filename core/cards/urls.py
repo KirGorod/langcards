@@ -7,6 +7,7 @@ app_name = 'cards'
 
 router = DefaultRouter()
 router.register(r'cards', views.CardViewSet, basename='cards')
+router.register(r'decks', views.DeckViewSet, basename='decks')
 urlpatterns = router.urls
 
 urlpatterns += [

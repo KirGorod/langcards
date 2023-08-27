@@ -5,6 +5,13 @@ from django.utils import timezone
 
 class Deck(models.Model):
     title = models.CharField(max_length=255)
+    default = models.BooleanField('Default Deck', default=False)
+    user = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.title
