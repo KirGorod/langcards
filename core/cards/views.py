@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 import random
 
 from cards.models import Card, CardProgress, Deck
-from .serializers import CardSerializer, DeckSerializer
+from .serializers import CardSerializer, DeckSerializer, LearnCardSerializer
 
 
 class CardViewSet(viewsets.ModelViewSet):
@@ -78,7 +78,7 @@ class LearnCardsView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        serializer = CardSerializer(
+        serializer = LearnCardSerializer(
             progress.card,
             context={'request': self.request}
         )

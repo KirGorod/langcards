@@ -17,8 +17,16 @@ class DeckSerializer(serializers.ModelSerializer):
 
 
 class CardSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = Base64ImageField(required=False)
 
+    class Meta:
+        model = Card
+        fields = [
+            'id', 'deck', 'word', 'translation', 'image'
+        ]
+
+
+class LearnCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = [
@@ -41,19 +49,17 @@ class CardSerializer(serializers.ModelSerializer):
         ).count()
 
         if ans_count >= count:
-            raise ValueError(
-                'ans_count can\'t be more or equal than overall '
-                f'cards count:({count}) in this deck'
-            )
+            cards = Card.objects.filter(deck=self.instance.deck)
+            answers = [card.translation for card in cards]
+        else:
+            while len(answers) < ans_count:
+                random_index = random.randint(0, count - 1)
+                answer = Card.objects.filter(
+                    deck=self.instance.deck
+                )[random_index].translation
 
-        while len(answers) < ans_count:
-            random_index = random.randint(0, count - 1)
-            answer = Card.objects.filter(
-                deck=self.instance.deck
-            )[random_index].translation
-
-            if answer not in answers:
-                answers.append(answer)
+                if answer not in answers:
+                    answers.append(answer)
 
         random.shuffle(answers)
         return answers
