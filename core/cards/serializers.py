@@ -12,8 +12,18 @@ class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = [
-            'id', 'deck', 'word', 'translation', 'image'
+            'id', 'deck', 'word', 'translation', 'description', 'image'
         ]
+
+    def validate_deck(self, deck):
+        user = self.context['request'].user
+
+        if deck.user != user:
+            raise serializers.ValidationError(
+                'This deck cannot be edited by this user.'
+            )
+
+        return deck
 
 
 class LearnCardSerializer(serializers.ModelSerializer):
