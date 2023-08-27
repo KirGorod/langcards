@@ -2,8 +2,18 @@ import random
 
 from rest_framework import serializers
 
-from cards.models import Card
+from cards.models import Card, Deck
 from core.fields import Base64ImageField
+
+
+class DeckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deck
+        fields = ['id', 'title', 'default',]
+        extra_kwargs = {
+            'default': {'read_only': True},
+            'user': {'read_only': True},
+        }
 
 
 class CardSerializer(serializers.ModelSerializer):

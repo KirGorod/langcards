@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,13 +10,33 @@ from rest_framework.permissions import IsAuthenticated
 import random
 
 from cards.models import Card, CardProgress, Deck
-from .serializers import CardSerializer, LearnCardSerializer
+from .serializers import CardSerializer, DeckSerializer, LearnCardSerializer
 
 
 class CardViewSet(viewsets.ModelViewSet):
+    renderer_classes = [JSONRenderer]
+    parser_classes = [JSONParser]
+
     model = Card
     queryset = Card.objects.all()
     serializer_class = CardSerializer
+
+
+class DeckViewSet(viewsets.ModelViewSet):
+    renderer_classes = [JSONRenderer]
+    parser_classes = [JSONParser]
+    permission_classes = [IsAuthenticated]
+    model = Deck
+    serializer_class = DeckSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Deck.objects.filter(
+            Q(default=True) | Q(user=user)
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class LearnCardsView(APIView):
@@ -85,7 +107,7 @@ class RandomCardView(APIView):
         )
 
 
-class AddDeckToLearning(APIView):
+class AddDeckToLearningView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
