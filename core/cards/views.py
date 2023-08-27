@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -24,15 +26,14 @@ class DeckViewSet(viewsets.ModelViewSet):
     renderer_classes = [JSONRenderer]
     parser_classes = [JSONParser]
     permission_classes = [IsAuthenticated]
-
     model = Deck
     serializer_class = DeckSerializer
 
     def get_queryset(self):
         user = self.request.user
-        default_decks = Deck.objects.filter(default=True)
-        user_decks = Deck.objects.filter(user=user)
-        return default_decks.union(user_decks)
+        return Deck.objects.filter(
+            Q(default=True) | Q(user=user)
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -106,7 +107,7 @@ class RandomCardView(APIView):
         )
 
 
-class AddDeckToLearning(APIView):
+class AddDeckToLearningView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
