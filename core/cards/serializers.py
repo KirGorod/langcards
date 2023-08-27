@@ -6,16 +6,6 @@ from cards.models import Card, Deck
 from core.fields import Base64ImageField
 
 
-class DeckSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Deck
-        fields = ['id', 'title', 'default',]
-        extra_kwargs = {
-            'default': {'read_only': True},
-            'user': {'read_only': True},
-        }
-
-
 class CardSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False)
 
@@ -63,3 +53,25 @@ class LearnCardSerializer(serializers.ModelSerializer):
 
         random.shuffle(answers)
         return answers
+
+
+class DeckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deck
+        fields = ['id', 'title', 'default',]
+        extra_kwargs = {
+            'default': {'read_only': True},
+            'user': {'read_only': True},
+        }
+
+
+class DeckDetailSerializer(serializers.ModelSerializer):
+    cards = CardSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Deck
+        fields = ['id', 'title', 'default', 'cards']
+        extra_kwargs = {
+            'default': {'read_only': True},
+            'user': {'read_only': True},
+        }

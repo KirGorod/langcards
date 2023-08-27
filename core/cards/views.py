@@ -12,7 +12,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 
 from cards.models import Card, CardProgress, Deck
-from .serializers import CardSerializer, DeckSerializer, LearnCardSerializer
+from .serializers import (
+    CardSerializer,
+    DeckSerializer,
+    LearnCardSerializer,
+    DeckDetailSerializer
+)
 
 
 class CardViewSet(viewsets.ModelViewSet):
@@ -54,6 +59,11 @@ class DeckViewSet(viewsets.ModelViewSet):
         return Deck.objects.filter(
             Q(default=True) | Q(user=user)
         )
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return DeckDetailSerializer
+        return self.serializer_class
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
