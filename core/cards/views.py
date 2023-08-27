@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
@@ -7,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
-import random
+from rest_framework.exceptions import PermissionDenied
 
 from cards.models import Card, CardProgress, Deck
 from .serializers import CardSerializer, DeckSerializer, LearnCardSerializer
@@ -16,10 +18,21 @@ from .serializers import CardSerializer, DeckSerializer, LearnCardSerializer
 class CardViewSet(viewsets.ModelViewSet):
     renderer_classes = [JSONRenderer]
     parser_classes = [JSONParser]
+    permission_classes = [IsAuthenticated]
 
     model = Card
-    queryset = Card.objects.all()
     serializer_class = CardSerializer
+
+    def get_object(self):
+        card = super().get_object()
+        user = self.request.user
+        if user != card.user:
+            raise PermissionDenied("You are not allowed to edit this card.")
+        return card
+
+    def get_queryset(self):
+        user = self.request.user
+        return Card.objects.filter(deck__user=user)
 
 
 class DeckViewSet(viewsets.ModelViewSet):
@@ -28,6 +41,13 @@ class DeckViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     model = Deck
     serializer_class = DeckSerializer
+
+    def get_object(self):
+        deck = super().get_object()
+        user = self.request.user
+        if user != deck.user or deck.default:
+            raise PermissionDenied("You are not allowed to edit this deck.")
+        return deck
 
     def get_queryset(self):
         user = self.request.user
