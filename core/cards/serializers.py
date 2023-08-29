@@ -26,13 +26,7 @@ class CardSerializer(serializers.ModelSerializer):
         return deck
 
 
-class LearnCardSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Card
-        fields = [
-            'id', 'deck', 'word', 'translation', 'image'
-        ]
-
+class LearnCardSerializer(CardSerializer):
     def to_representation(self, instance):
         context = super().to_representation(instance)
         context['answers'] = self._get_random_answers(3)
