@@ -1,5 +1,7 @@
 import random
+import os
 
+from django.conf import settings
 from rest_framework import serializers
 
 from cards.models import Card, Deck
@@ -66,13 +68,32 @@ class LearnCardSerializer(serializers.ModelSerializer):
 
 
 class DeckSerializer(serializers.ModelSerializer):
+    preview = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Deck
-        fields = ['id', 'title', 'default',]
+        fields = ['id', 'title', 'default', 'preview',]
         extra_kwargs = {
             'default': {'read_only': True},
             'user': {'read_only': True},
         }
+
+    def get_preview(self, deck):
+        preview_images = []
+        request = self.context.get('request')
+        cards = Card.objects.filter(deck=deck, image__isnull=False)[:3]
+
+        for card in cards:
+            if len(preview_images) >= 3:
+                break
+            if card.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, card.image.path)
+                if os.path.isfile(image_path):
+                    preview_images.append(
+                        request.build_absolute_uri(card.image.url)
+                    )
+
+        return preview_images
 
 
 class DeckDetailSerializer(serializers.ModelSerializer):
