@@ -281,7 +281,7 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
         )
 
         expected_response = self._get_expected_deck_response(
-            deck=self.deck, add_cards=True
+            deck=self.deck, cards=True
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -302,10 +302,10 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
 
         expected_data = []
         expected_data.append(
-            self._get_expected_deck_response(self.deck)
+            self._get_expected_deck_response(self.deck, preview=True)
         )
         expected_data.append(
-            self._get_expected_deck_response(self.default_deck)
+            self._get_expected_deck_response(self.default_deck, preview=True)
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -345,9 +345,9 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
         deck = Deck.objects.last()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
+        self.assertDictEqual(
             response.data,
-            self._get_expected_deck_response(deck)
+            self._get_expected_deck_response(deck, preview=True)
         )
 
     def test_update_deck_not_authenticated(self):
@@ -386,7 +386,7 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
-            self._get_expected_deck_response(deck)
+            self._get_expected_deck_response(deck, preview=True)
         )
 
     def test_delete_deck_not_authenticated(self):
