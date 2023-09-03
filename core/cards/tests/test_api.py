@@ -5,12 +5,13 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from cards.models import Card
+from cards.models import Card, Deck
 from cards.factories import CardFactory, DeckFactory
-from core.utils import get_test_image_url
+from user.factories import UserFactory
+from .mixins import ExpectedResponseMixin
 
 
-class TestCards(APITestCase):
+class TestCards(APITestCase, ExpectedResponseMixin):
     def setUp(self) -> None:
         self.deck = DeckFactory.create()
         self.cards = CardFactory.create_batch(5, deck=self.deck)
@@ -40,7 +41,7 @@ class TestCards(APITestCase):
             reverse('cards:cards-detail', kwargs={'pk': card.id})
         )
 
-        expected_data = self._get_expected_response(card)
+        expected_data = self._get_expected_card_response(card)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertDictEqual(response.data, expected_data)
 
@@ -67,7 +68,7 @@ class TestCards(APITestCase):
         cards_qs = Card.objects.filter(deck__user=self.user)
 
         for card in cards_qs:
-            card_data = OrderedDict(self._get_expected_response(card))
+            card_data = OrderedDict(self._get_expected_card_response(card))
             cards.append(card_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -134,7 +135,7 @@ class TestCards(APITestCase):
             format='json'
         )
         card = Card.objects.last()
-        expected_response = self._get_expected_response(card)
+        expected_response = self._get_expected_card_response(card)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertDictEqual(response.data, expected_response)
@@ -188,7 +189,7 @@ class TestCards(APITestCase):
             data=data,
             format='json'
         )
-        expected_response = self._get_expected_response(
+        expected_response = self._get_expected_card_response(
             Card.objects.get(id=card.id)
         )
 
@@ -233,15 +234,188 @@ class TestCards(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Card.objects.filter(id=card.id).exists())
 
-    def _get_expected_response(self, card: Card) -> dict:
-        """
-        Get expected response for a given card
-        """
-        return {
-            'id': card.id,
-            'deck': card.deck.id,
-            'word': card.word,
-            'translation': card.translation,
-            'description': card.description,
-            'image': get_test_image_url(card.image)
-        }
+
+class TestDeck(APITestCase, ExpectedResponseMixin):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.deck = DeckFactory(user=self.user1)
+        self.default_deck = DeckFactory(default=True, user=None)
+        self.cards = CardFactory.create_batch(5, deck=self.deck)
+
+    def test_get_single_deck_not_authorized(self):
+        response = self.client.get(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_single_deck_not_owned(self):
+        self.client.force_authenticate(self.user2)
+        response = self.client.get(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_default_deck(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(
+            reverse('cards:decks-detail', kwargs={'pk': self.default_deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_single_deck_not_found(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(
+            reverse('cards:decks-detail', kwargs={'pk': 99999})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_single_deck_success(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        expected_response = self._get_expected_deck_response(
+            deck=self.deck, add_cards=True
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_response)
+
+    def test_get_decks_list_not_authenticated(self):
+        response = self.client.get(
+            reverse('cards:decks-list')
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_decks_list_success(self):
+        self.client.force_authenticate(self.user1)
+        response = self.client.get(
+            reverse('cards:decks-list')
+        )
+
+        expected_data = []
+        expected_data.append(
+            self._get_expected_deck_response(self.deck)
+        )
+        expected_data.append(
+            self._get_expected_deck_response(self.default_deck)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+    def test_add_deck_not_authenticated(self):
+        data = {'title': 'New Deck'}
+        response = self.client.post(
+            reverse('cards:decks-list'),
+            data=data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_add_deck_no_title(self):
+        data = {}
+        self.client.force_authenticate(self.user1)
+        response = self.client.post(
+            reverse('cards:decks-list'),
+            data=data,
+            format='json'
+        )
+        error_message = json.loads(response.content.decode())
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, error_message)
+
+    def test_add_deck_success(self):
+        data = {'title': 'New Deck'}
+        self.client.force_authenticate(self.user1)
+        response = self.client.post(
+            reverse('cards:decks-list'),
+            data=data,
+            format='json'
+        )
+        deck = Deck.objects.last()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data,
+            self._get_expected_deck_response(deck)
+        )
+
+    def test_update_deck_not_authenticated(self):
+        response = self.client.patch(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_deck_not_owned(self):
+        self.client.force_authenticate(self.user2)
+        response = self.client.patch(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_default_deck(self):
+        self.client.force_authenticate(self.user1)
+        response = self.client.patch(
+            reverse('cards:decks-detail', kwargs={'pk': self.default_deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_deck_success(self):
+        data = {'title': 'New title'}
+        self.client.force_authenticate(self.user1)
+        response = self.client.patch(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id}),
+            data=data,
+            format='json'
+        )
+        deck = Deck.objects.get(id=self.deck.id)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            self._get_expected_deck_response(deck)
+        )
+
+    def test_delete_deck_not_authenticated(self):
+        response = self.client.delete(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_deck_not_owned(self):
+        self.client.force_authenticate(self.user2)
+        response = self.client.delete(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_default_deck(self):
+        self.client.force_authenticate(self.user1)
+        response = self.client.delete(
+            reverse('cards:decks-detail', kwargs={'pk': self.default_deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_deck_success(self):
+        self.client.force_authenticate(self.user1)
+        response = self.client.delete(
+            reverse('cards:decks-detail', kwargs={'pk': self.deck.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
