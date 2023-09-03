@@ -26,7 +26,7 @@ class UserLoginTests(APITestCase):
         """
         url = reverse('user:user_login')
         data = {
-            'username': 'wronguser',
+            'username': 'wrong_user',
             'password': 'password'
         }
         response = self.client.post(url, data)
@@ -42,7 +42,7 @@ class UserLoginTests(APITestCase):
         url = reverse('user:user_login')
         data = {
             'username': 'testuser',
-            'password': 'wrongpassword'
+            'password': 'wrong_password'
         }
         response = self.client.post(url, data)
         self.assertEqual(response['content-type'], 'application/json')
@@ -52,7 +52,7 @@ class UserLoginTests(APITestCase):
 
     def test_login_success(self):
         """
-        Test successfull login request
+        Test successful login request
         """
         url = reverse('user:user_login')
         data = {
@@ -144,7 +144,7 @@ class UserRegisterTests(APITestCase):
 
     def test_register_user_success(self):
         """
-        Test successfull registration
+        Test successful registration
         """
         url = reverse('user:user_register')
         data = {
@@ -226,7 +226,7 @@ class UserProfileTests(APITestCase):
 
     def test_get_user_profile_success(self):
         """
-        Test GET user profile data is successfull
+        Test GET user profile data is successful
         """
         self.client.force_authenticate(self.user)
         url = reverse('user:user_profile')
@@ -246,7 +246,7 @@ class UserProfileTests(APITestCase):
 
     def test_patch_user_profile_success(self):
         """
-        Test PATCH user profile is successfull
+        Test PATCH user profile is successful
         """
         self.client.force_authenticate(self.user)
         url = reverse('user:user_profile')
@@ -283,7 +283,7 @@ class UserProfileTests(APITestCase):
 
     def test_patch_change_single_data(self):
         """
-        Test PATHC user profile to change single field (username)
+        Test PATCH user profile to change single field (username)
         """
         self.client.force_authenticate(self.user)
         url = reverse('user:user_profile')
