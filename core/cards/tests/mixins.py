@@ -18,7 +18,8 @@ class ExpectedResponseMixin:
             'image': self._get_test_image_url(card.image)
         }
 
-    def _get_expected_deck_response(self, deck: Deck, add_cards=False):
+    def _get_expected_deck_response(self, deck: Deck,
+                                    cards=False, preview=False):
         """
         Get expected response for a given deck
         """
@@ -28,11 +29,16 @@ class ExpectedResponseMixin:
             'default': deck.default,
         }
 
-        if add_cards:
+        if preview:
+            preview = []
+            for card in deck.cards.filter(image__isnull=False)[:3]:
+                preview.append(self._get_test_image_url(card.image))
+            expected_response.update({'preview': preview})
+
+        if cards:
             cards = []
             for card in deck.cards.all():
                 cards.append(self._get_expected_card_response(card))
-
             expected_response.update({'cards': cards})
 
         return expected_response
