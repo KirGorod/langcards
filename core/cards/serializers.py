@@ -4,7 +4,7 @@ import os
 from django.conf import settings
 from rest_framework import serializers
 
-from cards.models import Card, Deck
+from cards.models import Card, CardAdditionalImage, Deck
 from core.fields import Base64ImageField
 
 
@@ -26,6 +26,24 @@ class CardSerializer(serializers.ModelSerializer):
             )
 
         return deck
+
+
+class CardDetailSerializer(CardSerializer):
+    additional_images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Card
+        fields = [
+            'id', 'deck', 'word', 'translation', 'description', 'image',
+            'additional_images',
+        ]
+
+    def get_additional_images(self, card):
+        request = self.context.get('request')
+        return [
+            request.build_absolute_uri(img.image.url)
+            for img in card.additional_images.all()
+        ]
 
 
 class LearnCardSerializer(CardSerializer):
