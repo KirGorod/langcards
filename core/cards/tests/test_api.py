@@ -41,7 +41,10 @@ class TestCards(APITestCase, ExpectedResponseMixin):
             reverse('cards:cards-detail', kwargs={'pk': card.id})
         )
 
-        expected_data = self._get_expected_card_response(card)
+        expected_data = self._get_expected_card_response(
+            card,
+            additional_images=True
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertDictEqual(response.data, expected_data)
 
