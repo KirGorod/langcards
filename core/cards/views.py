@@ -13,6 +13,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from cards.models import Card, CardProgress, Deck
 from .serializers import (
+    CardDetailSerializer,
     CardSerializer,
     DeckSerializer,
     LearnCardSerializer,
@@ -39,6 +40,11 @@ class CardViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Card.objects.filter(deck__user=user)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return CardDetailSerializer
+        return self.serializer_class
 
 
 class DeckViewSet(viewsets.ModelViewSet):

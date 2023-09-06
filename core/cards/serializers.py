@@ -28,6 +28,24 @@ class CardSerializer(serializers.ModelSerializer):
         return deck
 
 
+class CardDetailSerializer(CardSerializer):
+    additional_images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Card
+        fields = [
+            'id', 'deck', 'word', 'translation', 'description', 'image',
+            'additional_images',
+        ]
+
+    def get_additional_images(self, card):
+        request = self.context.get('request')
+        return [
+            request.build_absolute_uri(img.image.url)
+            for img in card.additional_images.all()
+        ]
+
+
 class LearnCardSerializer(CardSerializer):
     def to_representation(self, instance):
         context = super().to_representation(instance)
