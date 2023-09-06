@@ -42,6 +42,15 @@ class Card(models.Model):
         return f'{self.word} | {self.translation}'
 
 
+class CardAdditionalImage(models.Model):
+    card = models.ForeignKey(
+        Card,
+        on_delete=models.CASCADE,
+        related_name='additional_images'
+    )
+    image = models.ImageField(upload_to='cards_additional/')
+
+
 class CardProgressManager(models.Manager):
     def pop_card(self, user, deck):
         """
