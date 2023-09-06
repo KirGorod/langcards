@@ -4,7 +4,7 @@ import os
 from django.conf import settings
 from rest_framework import serializers
 
-from cards.models import Card, CardAdditionalImage, Deck
+from cards.models import Card, Deck
 from core.fields import Base64ImageField
 
 
