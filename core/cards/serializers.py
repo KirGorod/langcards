@@ -46,7 +46,7 @@ class CardDetailSerializer(CardSerializer):
         ]
 
 
-class LearnCardSerializer(CardSerializer):
+class LearnCardSerializer(CardDetailSerializer):
     def to_representation(self, instance):
         context = super().to_representation(instance)
         context['answers'] = self._get_random_answers(3)

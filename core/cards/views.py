@@ -87,7 +87,7 @@ class LearnCardsView(APIView):
 
     def post(self, request, *args, **kwargs):
         deck = get_object_or_404(Deck, id=kwargs.get('deck_id'))
-        action = self._validate_aciton(request.data.get('action'))
+        action = self._validate_action(request.data.get('action'))
 
         if not self._is_valid_action(action):
             return Response(
@@ -121,7 +121,7 @@ class LearnCardsView(APIView):
         )
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    def _validate_aciton(self, action):
+    def _validate_action(self, action):
         if action not in ['again', 'hard', 'good']:
             return None
         return action
