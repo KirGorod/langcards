@@ -17,6 +17,9 @@ pytest-cov = "^4.1.0"
 factory-boy = "^3.3.0"
 requests = "^2.31.0"
 ipython = "^8.15.0"
+google-api-python-client = "^2.98.0"
+google-auth-httplib2 = "^0.1.0"
+google-auth-oauthlib = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 
