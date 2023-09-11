@@ -11,6 +11,8 @@ from rest_framework.parsers import JSONParser
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
+from core.utils import save_image_from_url
+
 from .models import User
 from .serializers import UserRegisterSerializer, UserSerializer
 
@@ -77,14 +79,23 @@ class GoogleAuthView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        email = id_info['email']
+        first_name = id_info.get('given_name', '')
+        last_name = id_info.get('family_name', '')
+        username = f'{first_name} {last_name}'
+        username = username if first_name or last_name else email
+
         user, _ = User.objects.get_or_create(
-            email=id_info['email'],
+            email=email,
             defaults={
-                'username': id_info['email'],
-                'first_name': id_info.get('given_name', ''),
-                'last_name': id_info.get('family_name', '')
+                'username': username,
+                'first_name': first_name,
+                'last_name': last_name
             }
         )
-        token, _ = Token.objects.get_or_create(user=user)
 
+        if not user.avatar:
+            save_image_from_url(user, 'avatar', id_info.get('picture'))
+
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
