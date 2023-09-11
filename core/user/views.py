@@ -78,9 +78,9 @@ class GoogleAuthView(APIView):
             )
 
         user, _ = User.objects.get_or_create(
-            username=id_info['email'],
+            email=id_info['email'],
             defaults={
-                'email': id_info['email'],
+                'username': id_info['email'],
                 'first_name': id_info.get('given_name', ''),
                 'last_name': id_info.get('family_name', '')
             }
