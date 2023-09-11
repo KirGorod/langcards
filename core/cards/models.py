@@ -59,7 +59,7 @@ class CardProgressManager(models.Manager):
         return self.filter(
             user=user,
             card__deck=deck,
-            due=timezone.now()
+            due__lte=timezone.now()
         ).order_by('priority').first()
 
 
