@@ -1,6 +1,11 @@
+from decimal import Decimal
+
 from datetime import timedelta
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Deck(models.Model):
@@ -74,7 +79,7 @@ class CardProgress(models.Model):
         (REVIEW, 'Review'),
         (RELEARNING, 'Relearning')
     )
-
+    DEFAULT_EASE = 1.85
     ACTIONS = ['again', 'hard', 'good']
 
     user = models.ForeignKey(
@@ -89,44 +94,62 @@ class CardProgress(models.Model):
     )
     stage = models.PositiveSmallIntegerField(choices=CARD_STAGES, default=NEW)
     due = models.DateField(default=timezone.now)
-    interval = models.IntegerField(default=10)
-    ease = models.DecimalField(max_digits=5, decimal_places=2, default=1.85)
-    priority = models.PositiveSmallIntegerField(default=1)
+    interval = models.IntegerField(default=1)
+    ease = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=DEFAULT_EASE
+    )
+    priority = models.PositiveIntegerField(default=1)
     objects = CardProgressManager()
 
     def __str__(self):
         return f'{self.user.username}`s progress for card {self.card.word}'
 
     def again(self):
-        interval = self.interval * 1.25
-        if self.stage in [self.NEW, self.LEARNING]:
-            interval = 1
-        self._update_progress(interval, priority=2)
+        interval = 0
+        ease = max(self.ease - Decimal('0.25'), self.DEFAULT_EASE)
+        priority = self.priority + 1
+        self._update_progress(interval, priority=priority, new_ease=ease)
 
     def hard(self):
-        interval = self.interval * 1.35
-        if self.stage in [self.NEW, self.LEARNING]:
-            interval = 2
-        self._update_progress(interval, priority=3)
+        interval = 0
+        ease = max(self.ease - Decimal('0.15'), self.DEFAULT_EASE)
+        priority = self.priority + 2
+        self._update_progress(interval, priority=priority, new_ease=ease)
 
     def good(self):
         interval = self.interval * self.ease
-        if self.stage in [self.NEW, self.LEARNING]:
-            interval = 3
-        self._update_progress(interval)
+        ease = self.ease + Decimal('0.15')
+        priority = self.priority + 3
 
-    def _update_progress(self, new_interval, priority=None, new_ease=None):
         if self.stage == self.NEW:
+            interval = 0
+        if self.stage == self.LEARNING:
+            interval = 2
+        if self.stage == self.REVIEW:
+            interval = 3
+            ease = self.ease + Decimal('0.25')
+
+        self._update_progress(interval, priority=priority, new_ease=ease)
+
+    def _update_progress(self, interval, priority, new_ease):
+        self.ease = new_ease
+        learning_threshold = self.ease > 2
+        review_threshold = int(self.interval) * self.ease > 6
+
+        if self.stage == self.NEW and learning_threshold:
             self.stage = self.LEARNING
+            interval = 1
 
-        if new_ease:
-            self.ease = new_ease
+        if self.stage == self.LEARNING and review_threshold:
+            self.stage = self.REVIEW
 
-        if priority:
-            self.priority = priority
-        else:
+        self.due = timezone.now() + timedelta(days=interval)
+        self.priority = priority
+        if self.due > timezone.now():
+            self.store_log(self.user, self.card)
             self.priority = 1
-            self.due = timezone.now() + timedelta(days=new_interval)
 
         self.save()
 
@@ -137,3 +160,16 @@ class CardProgress(models.Model):
                 action_method()
                 return
         raise ValueError(f"Invalid action: {action}")
+
+    def store_log(self, user, card):
+        LearningLog.objects.create(user=user, card=card)
+
+
+class LearningLog(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='learning_log'
+    )
+    card = models.ForeignKey(Card, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
