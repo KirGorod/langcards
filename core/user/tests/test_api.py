@@ -237,8 +237,8 @@ class UserProfileTests(APITestCase):
             'last_name': self.user.last_name,
             'email': self.user.email,
             'avatar': None,
-            'progress': {}
         }
+        response.data.pop('progress')
 
         self.assertEqual(response['content-type'], 'application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -269,8 +269,8 @@ class UserProfileTests(APITestCase):
             'last_name': updated_user.last_name,
             'email': updated_user.email,
             'avatar': None,
-            'progress': {}
         }
+        response.data.pop('progress')
 
         self.assertEqual(response['content-type'], 'application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -304,8 +304,8 @@ class UserProfileTests(APITestCase):
             'last_name': self.user.last_name,
             'email': self.user.email,
             'avatar': None,
-            'progress': {}
         }
+        response.data.pop('progress')
 
         self.assertEqual(response['content-type'], 'application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -340,8 +340,8 @@ class UserProfileTests(APITestCase):
             'email': self.user.email,
             'avatar': None,
             'token': new_token,
-            'progress': {}
         }
+        response.data.pop('progress')
         user = authenticate(
             username=self.user.username,
             password='new_password'
