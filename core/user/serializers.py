@@ -1,7 +1,9 @@
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.db.models.functions import TruncDate
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
@@ -43,6 +45,13 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def get_progress(self, user):
+        end_date = timezone.now()
+        start_date = end_date - timedelta(weeks=3)
+        dates_list = [
+            (end_date - timedelta(days=x)).strftime('%Y-%m-%d')
+            for x in range(0, (end_date - start_date).days + 1)
+        ]
+
         log_data = (
             LearningLog.objects.filter(user=user)
             .annotate(date=TruncDate('created_at'))
@@ -50,7 +59,12 @@ class UserSerializer(serializers.ModelSerializer):
             .annotate(count=Count('id'))
             .order_by('date')
         )
-        return {str(data['date']): data['count'] for data in log_data}
+
+        progress = {str(data['date']): data['count'] for data in log_data}
+        for date in dates_list:
+            progress.setdefault(date, 0)
+
+        return progress
 
     def update(self, instance, validated_data):
         password = validated_data.get('password')
