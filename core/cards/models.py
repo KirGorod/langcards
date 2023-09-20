@@ -145,9 +145,9 @@ class CardProgress(models.Model):
         if self.stage == self.LEARNING and review_threshold:
             self.stage = self.REVIEW
 
-        self.due = timezone.now() + timedelta(days=interval)
+        self.due = (timezone.now() + timedelta(days=interval)).date()
         self.priority = priority
-        if self.due > timezone.now():
+        if self.due > timezone.now().date():
             self.store_log(self.user, self.card)
             self.priority = 1
 
