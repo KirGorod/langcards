@@ -1,8 +1,11 @@
 
 from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
+from cards.models import LearningLog
 from core.fields import Base64ImageField
 
 User = get_user_model()
@@ -27,16 +30,27 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     user_token = None
     avatar = Base64ImageField()
+    progress = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = (
             'username', 'email', 'password',  'first_name', 'last_name',
-            'avatar',
+            'avatar', 'progress'
         )
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
+    def get_progress(self, user):
+        log_data = (
+            LearningLog.objects.filter(user=user)
+            .annotate(date=TruncDate('created_at'))
+            .values('date')
+            .annotate(count=Count('id'))
+            .order_by('date')
+        )
+        return {str(data['date']): data['count'] for data in log_data}
 
     def update(self, instance, validated_data):
         password = validated_data.get('password')

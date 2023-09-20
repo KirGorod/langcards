@@ -236,7 +236,8 @@ class UserProfileTests(APITestCase):
             'first_name': self.user.first_name,
             'last_name': self.user.last_name,
             'email': self.user.email,
-            'avatar': None
+            'avatar': None,
+            'progress': {}
         }
 
         self.assertEqual(response['content-type'], 'application/json')
@@ -267,7 +268,8 @@ class UserProfileTests(APITestCase):
             'first_name': updated_user.first_name,
             'last_name': updated_user.last_name,
             'email': updated_user.email,
-            'avatar': None
+            'avatar': None,
+            'progress': {}
         }
 
         self.assertEqual(response['content-type'], 'application/json')
@@ -301,7 +303,8 @@ class UserProfileTests(APITestCase):
             'first_name': self.user.first_name,
             'last_name': self.user.last_name,
             'email': self.user.email,
-            'avatar': None
+            'avatar': None,
+            'progress': {}
         }
 
         self.assertEqual(response['content-type'], 'application/json')
@@ -336,7 +339,8 @@ class UserProfileTests(APITestCase):
             'last_name': self.user.last_name,
             'email': self.user.email,
             'avatar': None,
-            'token': new_token
+            'token': new_token,
+            'progress': {}
         }
         user = authenticate(
             username=self.user.username,
