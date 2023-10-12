@@ -38,6 +38,7 @@ class ExpectedResponseMixin:
             'id': deck.id,
             'title': deck.title,
             'default': deck.default,
+            'image': self._get_test_image_url(deck.image)
         }
 
         if preview:
