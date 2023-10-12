@@ -11,6 +11,7 @@ class DeckFactory(factory.django.DjangoModelFactory):
     title = factory.Sequence(lambda n: f'Deck {n}')
     default = False
     user = factory.SubFactory(UserFactory)
+    image = factory.django.ImageField(color='red')
 
 
 class CardFactory(factory.django.DjangoModelFactory):

@@ -81,10 +81,11 @@ class LearnCardSerializer(CardDetailSerializer):
 
 class DeckSerializer(serializers.ModelSerializer):
     preview = serializers.SerializerMethodField(read_only=True)
+    image = Base64ImageField(required=False)
 
     class Meta:
         model = Deck
-        fields = ['id', 'title', 'default', 'preview',]
+        fields = ['id', 'title', 'default', 'preview', 'image']
         extra_kwargs = {
             'default': {'read_only': True},
             'user': {'read_only': True},
@@ -110,11 +111,13 @@ class DeckSerializer(serializers.ModelSerializer):
 
 class DeckDetailSerializer(serializers.ModelSerializer):
     cards = CardSerializer(many=True, read_only=True)
+    image = Base64ImageField(required=False)
 
     class Meta:
         model = Deck
-        fields = ['id', 'title', 'default', 'cards']
+        fields = ['id', 'title', 'default', 'cards', 'image']
         extra_kwargs = {
             'default': {'read_only': True},
             'user': {'read_only': True},
+            'image': {'read_only': True},
         }
