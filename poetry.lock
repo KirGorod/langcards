@@ -43,6 +43,22 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "blurhash-python"
+version = "1.2.1"
+description = "BlurHash encoder implementation for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+cffi = "*"
+Pillow = "*"
+six = "*"
+
+[package.extras]
+testing = ["pytest"]
+
+[[package]]
 name = "cachetools"
 version = "5.3.1"
 description = "Extensible memoizing collections and decorators"
@@ -57,6 +73,17 @@ description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
 python-versions = ">=3.6"
+
+[[package]]
+name = "cffi"
+version = "1.16.0"
+description = "Foreign Function Interface for Python calling C code."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+pycparser = "*"
 
 [[package]]
 name = "charset-normalizer"
@@ -76,7 +103,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7
 
 [[package]]
 name = "coverage"
-version = "7.3.1"
+version = "7.3.2"
 description = "Code coverage measurement for Python"
 category = "main"
 optional = false
@@ -542,6 +569,14 @@ optional = false
 python-versions = ">=3.8"
 
 [[package]]
+name = "pycparser"
+version = "2.21"
+description = "C parser in Python"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
 name = "pyflakes"
 version = "3.1.0"
 description = "passive checker of Python programs"
@@ -729,6 +764,23 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "tqdm"
+version = "4.66.1"
+description = "Fast, Extensible Progress Meter"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout", "pytest-xdist"]
+notebook = ["ipywidgets (>=6)"]
+slack = ["slack-sdk"]
+telegram = ["requests"]
+
+[[package]]
 name = "traitlets"
 version = "5.9.0"
 description = "Traitlets Python configuration system"
@@ -789,15 +841,17 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "7aeb5b78c83eb97b93faa86e67de149b48992cfbf96d5dbc8841828224d239a8"
+content-hash = "e82761de1281755fcf28a341ac5fa0cce836c9d6fc89ef051c137addf541c02f"
 
 [metadata.files]
 appnope = []
 asgiref = []
 asttokens = []
 backcall = []
+blurhash-python = []
 cachetools = []
 certifi = []
+cffi = []
 charset-normalizer = []
 colorama = []
 coverage = []
@@ -838,6 +892,7 @@ pure-eval = []
 pyasn1 = []
 pyasn1-modules = []
 pycodestyle = []
+pycparser = []
 pyflakes = []
 pygments = []
 pyparsing = []
@@ -853,6 +908,7 @@ six = []
 sqlparse = []
 stack-data = []
 tomli = []
+tqdm = []
 traitlets = []
 typing-extensions = []
 tzdata = []

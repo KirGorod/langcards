@@ -18,6 +18,7 @@ class Deck(models.Model):
         blank=True
     )
     image = models.ImageField(upload_to='decks/', blank=True, null=True)
+    image_hash = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -43,6 +44,7 @@ class Card(models.Model):
     translation = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True, blank=True)
     image = models.ImageField(upload_to='cards/', blank=True, null=True)
+    image_hash = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
         return f'{self.word} | {self.translation}'
@@ -55,6 +57,7 @@ class CardAdditionalImage(models.Model):
         related_name='additional_images'
     )
     image = models.ImageField(upload_to='cards_additional/')
+    image_hash = models.CharField(max_length=500, null=True, blank=True)
 
 
 class CardProgressManager(models.Manager):
