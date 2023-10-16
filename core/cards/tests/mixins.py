@@ -16,13 +16,17 @@ class ExpectedResponseMixin:
             'word': card.word,
             'translation': card.translation,
             'description': card.description,
-            'image': self._get_test_image_url(card.image)
+            'image': self._get_test_image_url(card.image),
+            'image_hash': card.image_hash
         }
 
         if additional_images:
             expected_response.update({
                 'additional_images': [
-                    self._get_test_image_url(img.image)
+                    {
+                        'image': self._get_test_image_url(img.image),
+                        'image_hash': img.image_hash
+                    }
                     for img in card.additional_images.all()
                 ]
             })
@@ -38,7 +42,8 @@ class ExpectedResponseMixin:
             'id': deck.id,
             'title': deck.title,
             'default': deck.default,
-            'image': self._get_test_image_url(deck.image)
+            'image': self._get_test_image_url(deck.image),
+            'image_hash': deck.image_hash
         }
 
         if preview:
