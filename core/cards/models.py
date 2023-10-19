@@ -95,7 +95,6 @@ class CardProgress(models.Model):
     )
     stage = models.PositiveSmallIntegerField(choices=CARD_STAGES, default=NEW)
     due = models.DateField(default=timezone.now)
-    interval = models.IntegerField(default=1)
     ease = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -120,12 +119,12 @@ class CardProgress(models.Model):
         self._update_progress(interval, priority=priority, new_ease=ease)
 
     def good(self):
-        interval = self.interval * self.ease
+        interval = 0
         ease = self.ease + Decimal('0.15')
         priority = self.priority + 3
 
-        if self.stage == self.NEW:
-            interval = 0
+        if self.stage == self.RELEARNING:
+            interval = 1
         if self.stage == self.LEARNING:
             interval = 2
         if self.stage == self.REVIEW:
@@ -135,9 +134,11 @@ class CardProgress(models.Model):
         self._update_progress(interval, priority=priority, new_ease=ease)
 
     def _update_progress(self, interval, priority, new_ease):
+        days_2 = 2
+        days_6 = 6
         self.ease = new_ease
-        learning_threshold = self.ease > 2
-        review_threshold = int(self.interval) * self.ease > 6
+        learning_threshold = self.ease > days_2
+        review_threshold = interval * self.ease > days_6
 
         if self.stage == self.NEW and learning_threshold:
             self.stage = self.LEARNING
@@ -146,7 +147,8 @@ class CardProgress(models.Model):
         if self.stage == self.LEARNING and review_threshold:
             self.stage = self.REVIEW
 
-        self.due = (timezone.now() + timedelta(days=interval)).date()
+        days = int(interval * self.ease)
+        self.due = (timezone.now() + timedelta(days=days)).date()
         self.priority = priority
         if self.due > timezone.now().date():
             self.store_log(self.user, self.card)
