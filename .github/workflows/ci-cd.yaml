@@ -28,71 +28,71 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Cache Docker layers
-      uses: actions/cache@v2
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-    - name: Build the Docker Compose file
-      run: docker-compose -f docker-compose.yml build
-      env:
-        ENTRYPOINT_TYPE: dev
-        APP_PORT: 8000
-        DB_NAME: github_actions
-        DB_USER: user
-        DB_PASS: password
-        DB_PORT: 5432
-        DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.dev
-        DJANGO_SECRET_KEY: secret_key
+      - name: Build the Docker Compose file
+        run: docker-compose -f docker-compose.yml build
+        env:
+          ENTRYPOINT_TYPE: dev
+          APP_PORT: 8000
+          DB_NAME: github_actions
+          DB_USER: user
+          DB_PASS: password
+          DB_PORT: 5432
+          DB_HOST: db
+          DJANGO_SETTINGS_MODULE: core.settings.dev
+          DJANGO_SECRET_KEY: secret_key
 
-    - name: Up services
-      run: docker-compose -f docker-compose.yml up -d
-      env:
-        ENTRYPOINT_TYPE: dev
-        APP_PORT: 8000
-        DB_NAME: github_actions
-        DB_USER: user
-        DB_PASS: password
-        DB_PORT: 5432
-        DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.dev
-        DJANGO_SECRET_KEY: secret_key
+      - name: Up services
+        run: docker-compose -f docker-compose.yml up -d
+        env:
+          ENTRYPOINT_TYPE: dev
+          APP_PORT: 8000
+          DB_NAME: github_actions
+          DB_USER: user
+          DB_PASS: password
+          DB_PORT: 5432
+          DB_HOST: db
+          DJANGO_SETTINGS_MODULE: core.settings.dev
+          DJANGO_SECRET_KEY: secret_key
 
-    - name: Run tests
-      run: docker-compose exec -T web pytest
-      env:
-        ENTRYPOINT_TYPE: dev
-        APP_PORT: 8000
-        DB_NAME: github_actions
-        DB_USER: user
-        DB_PASS: password
-        DB_PORT: 5432
-        DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.dev
-        DJANGO_SECRET_KEY: secret_key
+      - name: Run tests
+        run: docker-compose exec -T web pytest
+        env:
+          ENTRYPOINT_TYPE: dev
+          APP_PORT: 8000
+          DB_NAME: github_actions
+          DB_USER: user
+          DB_PASS: password
+          DB_PORT: 5432
+          DB_HOST: db
+          DJANGO_SETTINGS_MODULE: core.settings.dev
+          DJANGO_SECRET_KEY: secret_key
 
-    - name: Shutdown services
-      run: docker-compose down
-      env:
-        ENTRYPOINT_TYPE: dev
-        APP_PORT: 8000
-        DB_NAME: github_actions
-        DB_USER: user
-        DB_PASS: password
-        DB_PORT: 5432
-        DB_HOST: db
-        DJANGO_SETTINGS_MODULE: core.settings.dev
-        DJANGO_SECRET_KEY: secret_key
+      - name: Shutdown services
+        run: docker-compose down
+        env:
+          ENTRYPOINT_TYPE: dev
+          APP_PORT: 8000
+          DB_NAME: github_actions
+          DB_USER: user
+          DB_PASS: password
+          DB_PORT: 5432
+          DB_HOST: db
+          DJANGO_SETTINGS_MODULE: core.settings.dev
+          DJANGO_SECRET_KEY: secret_key
 
   deploy:
     if: github.event_name == 'push'
@@ -100,30 +100,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Deploy to dev server
-      if: success()  # Only run if previous steps were successful
-      env:
-        HOST: 46.101.248.100
-        USERNAME: deployer
-        PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-      run: |
-        # Install SSH client
-        sudo apt-get install -y openssh-client
-        # Write the SSH private key from secrets
-        echo "$PRIVATE_KEY" > private_key
-        chmod 600 private_key
-        # SSH into the server
-        ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$HOST <<-EOL
-          cd /home/deployer/langcards
-          git fetch --all
-          git pull
-          docker-compose down
-          docker-compose up -d --build
+      - name: Deploy to dev server
+        if: success() # Only run if previous steps were successful
+        env:
+          HOST: langcards.fun
+          USERNAME: deployer
+          PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          # Install SSH client
+          sudo apt-get install -y openssh-client
+          # Write the SSH private key from secrets
+          echo "$PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          # SSH into the server
+          ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$HOST <<-EOL
+            cd /home/deployer/langcards
+            git fetch --all
+            git pull
+            docker-compose down
+            docker-compose up -d --build
 
-          # Check if 'web' service is up and running
-          SERVICE_STATUS=\$(docker-compose ps | grep web | grep "Up")
-          if [ -z "\$SERVICE_STATUS" ]; then
-            echo "'web' service is not running!"
-            exit 1
-          fi
-        EOL
+            # Check if 'web' service is up and running
+            SERVICE_STATUS=\$(docker-compose ps | grep web | grep "Up")
+            if [ -z "\$SERVICE_STATUS" ]; then
+              echo "'web' service is not running!"
+              exit 1
+            fi
+          EOL
