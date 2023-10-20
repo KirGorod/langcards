@@ -14,7 +14,8 @@ class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = [
-            'id', 'deck', 'word', 'translation', 'description', 'image'
+            'id', 'deck', 'word', 'translation', 'description', 'image',
+            'image_hash'
         ]
 
     def validate_deck(self, deck):
@@ -35,13 +36,16 @@ class CardDetailSerializer(CardSerializer):
         model = Card
         fields = [
             'id', 'deck', 'word', 'translation', 'description', 'image',
-            'additional_images',
+            'additional_images', 'image_hash'
         ]
 
     def get_additional_images(self, card):
         request = self.context.get('request')
         return [
-            request.build_absolute_uri(img.image.url)
+            {
+                'image': request.build_absolute_uri(img.image.url),
+                'image_hash': img.image_hash
+            }
             for img in card.additional_images.all()
         ]
 
@@ -85,7 +89,7 @@ class DeckSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Deck
-        fields = ['id', 'title', 'default', 'preview', 'image']
+        fields = ['id', 'title', 'default', 'preview', 'image', 'image_hash']
         extra_kwargs = {
             'default': {'read_only': True},
             'user': {'read_only': True},
@@ -115,7 +119,7 @@ class DeckDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Deck
-        fields = ['id', 'title', 'default', 'cards', 'image']
+        fields = ['id', 'title', 'default', 'cards', 'image', 'image_hash']
         extra_kwargs = {
             'default': {'read_only': True},
             'user': {'read_only': True},
