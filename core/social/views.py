@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from social.models import SiteComment
 from social.serializers import SiteCommentSerializer
@@ -15,6 +15,11 @@ class SiteCommentViewSet(viewsets.ModelViewSet):
 
     model = SiteComment
     serializer_class = SiteCommentSerializer
+
+    def get_permissions(self):
+        if self.action == 'list':
+            self.permission_classes = [AllowAny]
+        return [permission() for permission in self.permission_classes]
 
     def get_object(self):
         obj_id = self.kwargs.get('pk')
