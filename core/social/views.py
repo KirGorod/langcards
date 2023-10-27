@@ -6,12 +6,14 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from social.models import SiteComment
 from social.serializers import SiteCommentSerializer
+from social.pagination import SiteCommentsPagination
 
 
 class SiteCommentViewSet(viewsets.ModelViewSet):
     renderer_classes = [JSONRenderer]
     parser_classes = [JSONParser]
     permission_classes = [IsAuthenticated]
+    pagination_class = SiteCommentsPagination
 
     model = SiteComment
     serializer_class = SiteCommentSerializer
@@ -27,7 +29,9 @@ class SiteCommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(SiteComment, id=obj_id, user=user)
 
     def get_queryset(self):
-        return SiteComment.objects.all()[:10]
+        return SiteComment.objects.all().select_related(
+            'user'
+        ).order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
