@@ -32,7 +32,8 @@ class SiteCommentViewSet(viewsets.ModelViewSet):
         return SiteComment.objects.all().select_related(
             'user'
         ).only(
-            'id', 'message', 'rating', 'created_at', 'user__username'
+            'id', 'message', 'rating', 'created_at', 'user__username',
+            'user__avatar'
         ).order_by('-created_at')
 
     def perform_create(self, serializer):
