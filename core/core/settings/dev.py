@@ -2,7 +2,7 @@ import os
 from .base import *
 
 DEBUG = True
-SQL_LOGGING = True
+SQL_LOGGING = False
 
 # Other development-specific settings
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
