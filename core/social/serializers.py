@@ -20,4 +20,6 @@ class SiteCommentSerializer(serializers.ModelSerializer):
 
     def get_avatar(self, comment):
         request = self.context.get('request')
-        return request.build_absolute_uri(comment.user.avatar.url)
+        if comment.user.avatar:
+            return request.build_absolute_uri(comment.user.avatar.url)
+        return None
