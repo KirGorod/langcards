@@ -8,8 +8,8 @@ class SiteCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SiteComment
-        fields = ('id', 'user', 'username', 'message', 'rating', 'created_at')
-        read_only_fields = ('id', 'user', 'created_at',)
+        fields = ('id', 'username', 'message', 'rating', 'created_at')
+        read_only_fields = ('id', 'username', 'created_at',)
 
     def get_username(sefl, comment):
         return comment.user.username
