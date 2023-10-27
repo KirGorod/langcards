@@ -36,13 +36,13 @@ class TestSiteMessages(APITestCase):
         url = reverse('social:comments-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 10)
+        self.assertEqual(len(response.data.get('results')), 10)
 
     def test_get_comment_list_no_auth(self):
         url = reverse('social:comments-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 10)
+        self.assertEqual(len(response.data.get('results')), 10)
 
     def test_post_comment(self):
         self.client.force_authenticate(user=self.user)
