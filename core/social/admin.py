@@ -1,3 +1,10 @@
 from django.contrib import admin
 
-# Register your models here.
+from social.models import SiteComment
+
+
+class SiteCommentAdmin(admin.ModelAdmin):
+    search_fields = ('user__username'),
+
+
+admin.site.register(SiteComment, SiteCommentAdmin)
