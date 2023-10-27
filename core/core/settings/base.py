@@ -167,3 +167,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 DJANGO_SETTINGS_MODULE = os.getenv('DJANGO_SETTINGS_MODULE', 'core.settings.prod')
 
 PIXABAY_API_KEY = os.getenv('PIXABAY_API_KEY')
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
