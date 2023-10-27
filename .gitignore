@@ -1,7 +1,6 @@
 .env
 *__pycache__
 core/core/settings/prod.py
-core/core/settings/dev.py
 core/core/staticfiles/
 .vscode/
 .devcontainer/
