@@ -39,9 +39,12 @@ services:
       - .:/code
     working_dir: /code/core
     environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+      - DB_HOST=${DB_HOST}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
     depends_on:
       - db
       - redis
