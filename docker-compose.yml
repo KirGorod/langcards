@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   web:
@@ -31,6 +31,32 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
+  celery:
+    build: .
+    entrypoint: ["/entrypoint-${ENTRYPOINT_TYPE}.sh"]
+    command: celery -A core.celery worker --loglevel=info
+    volumes:
+      - .:/code
+    working_dir: /code/core
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+      - DB_HOST=${DB_HOST}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+    depends_on:
+      - db
+      - redis
+  redis:
+    image: "redis:latest"
+  flower:
+    image: mher/flower:0.9.7
+    command: ["flower", "--broker=redis://redis:6379"]
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
 
 volumes:
   postgres_data:
