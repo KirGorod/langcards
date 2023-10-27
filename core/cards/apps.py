@@ -6,4 +6,5 @@ class CardsConfig(AppConfig):
     name = 'cards'
 
     def ready(self):
-        from .signals import set_card_images, set_deck_images, set_card_additional_images
+        from .signals import set_card_images,\
+            set_deck_images, set_card_additional_images

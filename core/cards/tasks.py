@@ -1,18 +1,17 @@
 import blurhash
 
 from django.apps import apps
+from django.db.models.signals import post_save
+
 from core.celery import app as celery_app
-
-
-@celery_app.task(name='cards.tasks.add_numbers')
-def add_numbers(a, b):
-    res = a + b
-    print(res)
-    return res
+from cards.models import Card
 
 
 @celery_app.task(name='cards.tasks.generate_hashed_images')
 def generate_hashed_images(modelName, instance_id):
+    from cards.signals import set_card_images
+    post_save.disconnect(set_card_images, sender=Card)
+
     module, model = modelName.split('.')
     instance_model = apps.get_model(module, model)
     instance = instance_model.objects.get(id=instance_id)
@@ -27,3 +26,5 @@ def generate_hashed_images(modelName, instance_id):
             instance.save()
     except FileNotFoundError:
         pass
+
+    post_save.connect(set_card_images, sender=Card)
