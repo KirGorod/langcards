@@ -37,4 +37,5 @@ class SiteCommentViewSet(viewsets.ModelViewSet):
         ).order_by('-created_at')
 
     def perform_create(self, serializer):
+        SiteComment.objects.filter(user=self.request.user).delete()
         serializer.save(user=self.request.user)
