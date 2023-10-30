@@ -2,6 +2,7 @@ from tqdm import tqdm
 from django.core.management.base import BaseCommand
 
 from cards.models import Deck, Card, CardAdditionalImage
+from cards.utils import generate_hash_for_instance
 
 
 class Command(BaseCommand):
@@ -18,7 +19,7 @@ class Command(BaseCommand):
             )
 
             for item in tqdm(items, total=total):
-                item.save()
+                generate_hash_for_instance(item)
 
             self.stdout.write(
                 self.style.SUCCESS('Successfully generated hashed images')

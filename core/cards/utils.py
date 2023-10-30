@@ -1,10 +1,12 @@
 
 import requests
+import blurhash
 
 from django.conf import settings
 
 from cards.models import CardAdditionalImage
 from core.utils import save_image_from_url
+from cards.models import HashedImage
 
 
 def set_additional_images(card):
@@ -25,3 +27,22 @@ def set_additional_images(card):
         for item in data.get('hits'):
             card_image = CardAdditionalImage.objects.create(card=card)
             save_image_from_url(card_image, 'image', item.get('largeImageURL'))
+
+
+def generate_hash_for_instance(instance):
+    hash = None
+
+    try:
+        with open(instance.image.path, 'rb') as image_file:
+            hash = blurhash.encode(image_file, x_components=4, y_components=3)
+    except (FileNotFoundError, ValueError):
+        pass
+
+    if instance.hashed_image:
+        hashed_image = instance.hashed_image
+        hashed_image.hash = hash
+        hashed_image.save()
+    else:
+        hashed_image = HashedImage.objects.create(hash=hash)
+        instance.hashed_image = hashed_image
+        instance.save()
