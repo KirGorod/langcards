@@ -10,7 +10,10 @@ from cards.models import HashedImage
 def generate_hashed_images(modelName, instance_id):
     module, model = modelName.split('.')
     instance_model = apps.get_model(module, model)
-    instance = instance_model.objects.get(id=instance_id)
+    try:
+        instance = instance_model.objects.get(id=instance_id)
+    except instance_model.DoesNotExist:
+        return
 
     if not instance.image:
         return
