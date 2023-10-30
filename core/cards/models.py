@@ -5,10 +5,19 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
+from .mixins import HashedImageMixin
+
 User = get_user_model()
 
 
-class Deck(models.Model):
+class HashedImage(models.Model):
+    hash = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f'HasedImage: {self.hash}'
+
+
+class Deck(models.Model, HashedImageMixin):
     title = models.CharField(max_length=255)
     default = models.BooleanField('Default Deck', default=False)
     user = models.ForeignKey(
@@ -18,7 +27,12 @@ class Deck(models.Model):
         blank=True
     )
     image = models.ImageField(upload_to='decks/', blank=True, null=True)
-    image_hash = models.CharField(max_length=500, null=True, blank=True)
+    hashed_image = models.ForeignKey(
+        'cards.HashedImage',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.title
@@ -34,7 +48,7 @@ class Deck(models.Model):
             )
 
 
-class Card(models.Model):
+class Card(models.Model, HashedImageMixin):
     deck = models.ForeignKey(
         Deck,
         on_delete=models.CASCADE,
@@ -44,20 +58,33 @@ class Card(models.Model):
     translation = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True, blank=True)
     image = models.ImageField(upload_to='cards/', blank=True, null=True)
-    image_hash = models.CharField(max_length=500, null=True, blank=True)
+    hashed_image = models.ForeignKey(
+        'cards.HashedImage',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return f'{self.word} | {self.translation}'
 
 
-class CardAdditionalImage(models.Model):
+class CardAdditionalImage(models.Model, HashedImageMixin):
     card = models.ForeignKey(
         Card,
         on_delete=models.CASCADE,
         related_name='additional_images'
     )
     image = models.ImageField(upload_to='cards_additional/')
-    image_hash = models.CharField(max_length=500, null=True, blank=True)
+    hashed_image = models.ForeignKey(
+        'cards.HashedImage',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f'Additional image for {self.card.word}'
 
 
 class CardProgressManager(models.Manager):
