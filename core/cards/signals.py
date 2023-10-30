@@ -7,13 +7,14 @@ from .tasks import generate_hashed_images
 from .models import Card, Deck, CardAdditionalImage
 
 
-@receiver(post_save, sender=Card, )
+@receiver(post_save, sender=Card)
 def set_card_images(sender, instance, created, **kwargs):
     if created:
         transaction.on_commit(
             lambda: generate_hashed_images.delay('cards.Card', instance.pk)
         )
-    generate_hashed_images.delay('cards.Card', instance.id)
+    else:
+        generate_hashed_images.delay('cards.Card', instance.id)
     set_additional_images(instance)
 
 
@@ -23,7 +24,8 @@ def set_deck_images(sender, instance, created, **kwargs):
         transaction.on_commit(
             lambda: generate_hashed_images.delay('cards.Deck', instance.pk)
         )
-    generate_hashed_images.delay('cards.Deck', instance.id)
+    else:
+        generate_hashed_images.delay('cards.Deck', instance.id)
 
 
 @receiver(post_save, sender=CardAdditionalImage)
@@ -34,4 +36,5 @@ def set_card_additional_images(sender, instance, created, **kwargs):
                 'cards.CardAdditionalImage', instance.pk
             )
         )
-    generate_hashed_images.delay('cards.CardAdditionalImage', instance.id)
+    else:
+        generate_hashed_images.delay('cards.CardAdditionalImage', instance.id)
