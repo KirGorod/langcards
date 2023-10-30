@@ -12,7 +12,6 @@ class DeckFactory(factory.django.DjangoModelFactory):
     default = False
     user = factory.SubFactory(UserFactory)
     image = factory.django.ImageField(color='red')
-    image_hash = factory.Faker('pystr')
 
 
 class CardFactory(factory.django.DjangoModelFactory):
@@ -25,7 +24,6 @@ class CardFactory(factory.django.DjangoModelFactory):
     translation = factory.Faker('word')
     description = factory.Faker('text')
     image = factory.django.ImageField(color='blue')
-    image_hash = factory.Faker('pystr')
 
     @factory.post_generation
     def add_additional_images(self, create, extracted, **kwargs):
@@ -42,4 +40,3 @@ class CardAdditionalImageFactory(factory.django.DjangoModelFactory):
 
     card = factory.SubFactory(CardFactory)
     image = factory.django.ImageField(color='red')
-    image_hash = factory.Faker('pystr')
