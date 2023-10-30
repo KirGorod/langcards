@@ -305,14 +305,20 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
 
         expected_data = []
         expected_data.append(
-            self._get_expected_deck_response(self.deck, preview=True)
+            self._get_expected_deck_response(self.deck)
         )
         expected_data.append(
-            self._get_expected_deck_response(self.default_deck, preview=True)
+            self._get_expected_deck_response(self.default_deck)
         )
 
+        sorted_response_data = sorted(response.data, key=lambda x: x['id'])
+        sorted_expected_data = sorted(expected_data, key=lambda x: x['id'])
+
+        sorted_response_data = [dict(item) if isinstance(item, OrderedDict)
+                                else item for item in sorted_response_data]
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(sorted_response_data, sorted_expected_data)
 
     def test_add_deck_not_authenticated(self):
         data = {'title': 'New Deck'}
@@ -350,7 +356,7 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertDictEqual(
             response.data,
-            self._get_expected_deck_response(deck, preview=True)
+            self._get_expected_deck_response(deck)
         )
 
     def test_update_deck_not_authenticated(self):
@@ -389,7 +395,7 @@ class TestDeck(APITestCase, ExpectedResponseMixin):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
-            self._get_expected_deck_response(deck, preview=True)
+            self._get_expected_deck_response(deck)
         )
 
     def test_delete_deck_not_authenticated(self):
