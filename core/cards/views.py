@@ -65,7 +65,7 @@ class DeckViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Deck.objects.filter(
             Q(default=True) | Q(user=user)
-        )
+        ).order_by('-default', 'id')
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
