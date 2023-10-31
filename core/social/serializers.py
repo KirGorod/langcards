@@ -16,7 +16,14 @@ class SiteCommentSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'username', 'avatar', 'created_at',)
 
     def get_username(self, comment):
-        return comment.user.username
+        user = comment.user
+        username = user.username
+        first_name = user.first_name
+        last_name = user.last_name
+
+        if first_name or last_name:
+            return f'{first_name} {last_name}'.strip()
+        return username
 
     def get_avatar(self, comment):
         request = self.context.get('request')
