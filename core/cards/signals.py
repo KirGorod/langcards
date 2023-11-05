@@ -2,8 +2,7 @@ from django.db.models.signals import post_save
 from django.db import transaction
 from django.dispatch import receiver
 
-from .utils import set_additional_images
-from .tasks import generate_hashed_images
+from .tasks import generate_hashed_images, set_additional_images_task
 from .models import Card, Deck, CardAdditionalImage
 
 
@@ -19,7 +18,7 @@ def generate_hash(created, model_name, instance):
 @receiver(post_save, sender=Card)
 def set_card_images(sender, instance, created, **kwargs):
     generate_hash(created, 'cards.Card', instance)
-    set_additional_images(instance)
+    set_additional_images_task.delay(instance.id)
 
 
 @receiver(post_save, sender=Deck)

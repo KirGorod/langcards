@@ -4,12 +4,12 @@ import blurhash
 
 from django.conf import settings
 
-from cards.models import CardAdditionalImage
 from core.utils import save_image_from_url
-from cards.models import HashedImage
+from cards.models import HashedImage, Card, CardAdditionalImage
 
 
-def set_additional_images(card):
+def set_additional_images(card_id):
+    card = Card.objects.get(id=card_id)
     if card.additional_images.count() == 4:
         return
 

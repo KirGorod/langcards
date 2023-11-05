@@ -110,7 +110,7 @@ class CardProgress(models.Model):
         (REVIEW, 'Review'),
         (RELEARNING, 'Relearning')
     )
-    DEFAULT_EASE = 1.85
+    DEFAULT_EASE = 1.05
     ACTIONS = ['again', 'hard', 'good']
 
     user = models.ForeignKey(
@@ -149,7 +149,7 @@ class CardProgress(models.Model):
         self._update_progress(interval, priority=priority, new_ease=ease)
 
     def good(self):
-        interval = 0
+        interval = 1
         ease = self.ease + Decimal('0.15')
         priority = self.priority + 3
 
