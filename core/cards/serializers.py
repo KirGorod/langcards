@@ -73,7 +73,7 @@ class LearnCardSerializer(CardDetailSerializer):
         context = super().to_representation(instance)
         context['answers'] = self._get_random_answers(3)
         context['words_total'] = words_total
-        context['word_left'] = words_left
+        context['words_left'] = words_left
 
         return context
 
