@@ -1,7 +1,9 @@
 import random
+
+from django.utils import timezone
 from rest_framework import serializers
 
-from cards.models import Card, Deck
+from cards.models import Card, CardProgress, Deck, LearningLog
 from core.fields import Base64ImageField
 
 
@@ -48,9 +50,30 @@ class CardDetailSerializer(CardSerializer):
 
 
 class LearnCardSerializer(CardDetailSerializer):
+    def get_words_left(self, instace):
+        return CardProgress.objects.filter().count()
+
     def to_representation(self, instance):
+        user = self.context.get('user')
+        date = timezone.now().date()
+        deck = instance.deck
+
+        words_learned = LearningLog.objects.filter(
+            card__deck=deck,
+            user=user,
+            created_at__date=date
+        ).count()
+        words_left = CardProgress.objects.filter(
+            card__deck=deck,
+            user=user,
+            due=date
+        ).count()
+        words_total = words_learned + words_left
+
         context = super().to_representation(instance)
         context['answers'] = self._get_random_answers(3)
+        context['words_total'] = words_total
+        context['word_left'] = words_left
 
         return context
 

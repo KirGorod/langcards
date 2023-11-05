@@ -80,6 +80,7 @@ class LearnCardsView(APIView):
     renderer_classes = [JSONRenderer]
     parser_classes = [JSONParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = LearnCardSerializer 
 
     def get(self, request, *args, **kwargs):
         deck = get_object_or_404(Deck, id=kwargs.get('deck_id'))
@@ -115,9 +116,9 @@ class LearnCardsView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        serializer = LearnCardSerializer(
+        serializer = self.serializer_class(
             progress.card,
-            context={'request': self.request}
+            context={'request': self.request, 'user' :self.request.user}
         )
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
