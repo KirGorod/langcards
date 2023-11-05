@@ -3,6 +3,7 @@ import blurhash
 from django.apps import apps
 
 from core.celery import app as celery_app
+from cards.utils import set_additional_images
 from cards.models import HashedImage
 
 
@@ -31,3 +32,8 @@ def generate_hashed_images(modelName, instance_id):
                 instance.save()
     except FileNotFoundError:
         pass
+
+
+@celery_app.task(name='cards.tasks.set_additional_images_task')
+def set_additional_images_task(card_id):
+    set_additional_images(card_id)
