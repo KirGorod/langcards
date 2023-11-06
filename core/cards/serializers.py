@@ -53,7 +53,6 @@ class LearnCardSerializer(CardDetailSerializer):
     def to_representation(self, instance):
         user = self.context.get('user')
         date = timezone.now().date()
-        print('time: ', timezone.now())
         deck = instance.deck
 
         words_learned = LearningLog.objects.filter(
