@@ -179,8 +179,10 @@ class CardProgress(models.Model):
 
         days = int(interval * self.ease)
         self.due = (timezone.now() + timedelta(days=days)).date()
+        print('due: ', self.due)
         self.priority = priority
         if self.due > timezone.now().date():
+            print('store log: ', timezone.now())
             self.store_log(self.user, self.card)
             self.priority = 1
 
