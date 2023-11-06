@@ -35,5 +35,5 @@ def generate_hashed_images(modelName, instance_id):
 
 
 @celery_app.task(name='cards.tasks.set_additional_images_task')
-def set_additional_images_task(card_id):
-    set_additional_images(card_id)
+def set_additional_images_task(card_id, api_key):
+    set_additional_images(card_id, api_key)

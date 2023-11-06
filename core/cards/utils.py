@@ -1,5 +1,6 @@
 
 import requests
+import os
 import blurhash
 
 from django.conf import settings
@@ -8,16 +9,15 @@ from core.utils import save_image_from_url
 from cards.models import HashedImage, Card, CardAdditionalImage
 
 
-def set_additional_images(card_id):
+def set_additional_images(card_id, api_key):
     card = Card.objects.get(id=card_id)
     if card.additional_images.count() == 4:
         return
 
-    key = settings.PIXABAY_API_KEY
     query = card.word.replace(' ', '+')
     url = (
         f'https://pixabay.com/api/?'
-        f'key={key}&q={query}&image_type=photo&per_page=4'
+        f'key={api_key}&q={query}&image_type=photo&per_page=4'
     )
     response = requests.get(url)
     CardAdditionalImage.objects.filter(card=card).delete()
