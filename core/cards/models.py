@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from decimal import Decimal
 
 from datetime import timedelta
@@ -206,3 +207,22 @@ class LearningLog(models.Model):
     )
     card = models.ForeignKey(Card, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class LearnToday(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='learn_today'
+    )
+    deck = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name='learn_today')
+    cards_total = models.PositiveIntegerField(default=0)
+    date = models.DateField(auto_now_add=True)
+
+    def save(self, *args, **kwargs) -> None:
+        cards_total = CardProgress.objects.filter(
+            card__deck=self.deck,
+            due=self.date
+        ).count()
+        self.cards_total = cards_total
+        return super().save(*args, **kwargs)
