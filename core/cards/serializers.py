@@ -55,17 +55,12 @@ class LearnCardSerializer(CardDetailSerializer):
         date = timezone.now().date()
         deck = instance.deck
 
-        words_learned = LearningLog.objects.filter(
-            card__deck=deck,
-            user=user,
-            created_at__date=date
-        ).count()
         words_left = CardProgress.objects.filter(
             card__deck=deck,
             user=user,
             due=date
         ).count()
-        words_total = words_learned + words_left
+        words_total = self.context.get('cards_total', 0)
 
         context = super().to_representation(instance)
         context['answers'] = self._get_random_answers(3)

@@ -2,6 +2,7 @@ import random
 
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.utils import timezone
 
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
@@ -11,7 +12,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 
-from cards.models import Card, CardProgress, Deck
+from cards.models import Card, CardProgress, Deck, LearnToday
 from .serializers import (
     CardDetailSerializer,
     CardSerializer,
@@ -104,11 +105,20 @@ class LearnCardsView(APIView):
         )
         progress.handle_action(action)
         return self._process_get_next_card(deck)
+    
+    def get_cards_total(self, user, deck):
+        date = timezone.now().date()
+        obj, _ = LearnToday.objects.get_or_create(
+            user=user, deck=deck, date=date
+        )
+        return obj.cards_total
+
 
     def _is_valid_action(self, action):
         return action in CardProgress.ACTIONS
 
     def _process_get_next_card(self, deck):
+        cards_total = self.get_cards_total(self.request.user, deck)
         progress = CardProgress.objects.pop_card(self.request.user, deck)
         if not progress:
             return Response(
@@ -118,7 +128,11 @@ class LearnCardsView(APIView):
 
         serializer = self.serializer_class(
             progress.card,
-            context={'request': self.request, 'user' :self.request.user}
+            context={
+                'request': self.request,
+                'user' : self.request.user,
+                'cards_total': cards_total
+            }
         )
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
