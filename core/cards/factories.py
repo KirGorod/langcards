@@ -3,6 +3,7 @@ import factory
 from cards.models import Card, CardAdditionalImage, Deck
 from user.factories import UserFactory
 
+# test
 
 class DeckFactory(factory.django.DjangoModelFactory):
     class Meta:
