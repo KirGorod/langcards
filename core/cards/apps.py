@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
+# clown
 
 class CardsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
